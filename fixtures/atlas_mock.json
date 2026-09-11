@@ -1,0 +1,221 @@
+{
+  "_comment": "Stand-in for Apache Atlas. Mirrors what scripts/seed_atlas.py pushes into a live instance, so behaviour is identical whether Atlas is up or not. Replace with your real classifications when you point ATLAS_BASE_URL at the office instance.",
+  "tables": {
+    "customer_holding": {
+      "qualified_name": "retailbank.customer_holding@poc",
+      "guid": "fixture-customer-holding",
+      "columns": {
+        "cif": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Customer Information File"],
+          "data_type": "string",
+          "description": "Primary customer identifier"
+        },
+        "full_name": {
+          "classifications": ["PII", "NAME"],
+          "terms": ["Customer Name"],
+          "data_type": "string",
+          "description": "Customer full name"
+        },
+        "national_id": {
+          "classifications": ["PII", "NATIONAL_ID"],
+          "terms": ["National Registration Identity"],
+          "data_type": "string",
+          "description": "Government issued identity number"
+        },
+        "email": {
+          "classifications": ["PII", "EMAIL"],
+          "terms": ["Contact Email"],
+          "data_type": "string",
+          "description": "Primary contact email"
+        },
+        "phone": {
+          "classifications": ["PII", "PHONE"],
+          "terms": ["Contact Number"],
+          "data_type": "string",
+          "description": "Mobile contact number"
+        },
+        "dob": {
+          "classifications": ["QUASI_IDENTIFIER", "DATE_OF_BIRTH"],
+          "terms": ["Date of Birth"],
+          "data_type": "date",
+          "description": "Customer date of birth"
+        },
+        "segment": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Customer Segment"],
+          "data_type": "string",
+          "description": "Wealth segment band"
+        },
+        "risk_rating": {
+          "classifications": ["INTERNAL"],
+          "terms": ["AML Risk Rating"],
+          "data_type": "string",
+          "description": "Anti money laundering risk band"
+        },
+        "balance": {
+          "classifications": ["SENSITIVE", "FINANCIAL"],
+          "terms": ["Total Relationship Balance"],
+          "data_type": "double",
+          "description": "Aggregate balance across products"
+        },
+        "onboarded_at": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Onboarding Date"],
+          "data_type": "date",
+          "description": "Date the customer was onboarded"
+        }
+      }
+    },
+    "card_txn": {
+      "qualified_name": "retailbank.card_txn@poc",
+      "guid": "fixture-card-txn",
+      "columns": {
+        "transaction_id": {
+          "classifications": ["IDENTIFIER"],
+          "terms": [],
+          "data_type": "bigint",
+          "description": "Transaction surrogate key"
+        },
+        "cif": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Customer Information File"],
+          "data_type": "string",
+          "description": "Owning customer"
+        },
+        "txn_date": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Transaction Timestamp"],
+          "data_type": "timestamp",
+          "description": "When the transaction posted"
+        },
+        "amount": {
+          "classifications": ["SENSITIVE", "FINANCIAL"],
+          "terms": ["Transaction Amount"],
+          "data_type": "double",
+          "description": "Transaction value"
+        },
+        "currency": {
+          "classifications": ["INTERNAL"],
+          "terms": [],
+          "data_type": "string",
+          "description": "ISO currency code"
+        },
+        "merchant_category": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Merchant Category Code"],
+          "data_type": "string",
+          "description": "MCC grouping"
+        },
+        "merchant_name": {
+          "classifications": ["INTERNAL"],
+          "terms": [],
+          "data_type": "string",
+          "description": "Acquirer supplied merchant descriptor"
+        },
+        "channel": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Origination Channel"],
+          "data_type": "string",
+          "description": "Channel the transaction originated from"
+        },
+        "is_fraud": {
+          "classifications": ["SENSITIVE"],
+          "terms": ["Fraud Flag"],
+          "data_type": "boolean",
+          "description": "Confirmed fraud marker"
+        }
+      }
+    },
+    "product_takeup": {
+      "qualified_name": "retailbank.product_takeup@poc",
+      "guid": "fixture-product-takeup",
+      "columns": {
+        "takeup_id": {
+          "classifications": ["IDENTIFIER"],
+          "terms": [],
+          "data_type": "bigint",
+          "description": "Take-up surrogate key"
+        },
+        "cif": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Customer Information File"],
+          "data_type": "string",
+          "description": "Owning customer"
+        },
+        "product": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Product Code"],
+          "data_type": "string",
+          "description": "Product taken up"
+        },
+        "open_date": {
+          "classifications": ["INTERNAL"],
+          "terms": [],
+          "data_type": "date",
+          "description": "Account opening date"
+        },
+        "status": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Account Status"],
+          "data_type": "string",
+          "description": "Current account status"
+        },
+        "monthly_fee": {
+          "classifications": ["SENSITIVE", "FINANCIAL"],
+          "terms": [],
+          "data_type": "double",
+          "description": "Recurring monthly fee"
+        }
+      }
+    },
+    "service_request": {
+      "qualified_name": "retailbank.service_request@poc",
+      "guid": "fixture-service-request",
+      "columns": {
+        "tran_id": {
+          "classifications": ["IDENTIFIER"],
+          "terms": [],
+          "data_type": "bigint",
+          "description": "Service request surrogate key"
+        },
+        "cif": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Customer Information File"],
+          "data_type": "string",
+          "description": "Requesting customer"
+        },
+        "request_type": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Request Type"],
+          "data_type": "string",
+          "description": "Nature of the request"
+        },
+        "channel": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Origination Channel"],
+          "data_type": "string",
+          "description": "Channel the request came through"
+        },
+        "raised_at": {
+          "classifications": ["INTERNAL"],
+          "terms": [],
+          "data_type": "timestamp",
+          "description": "When the request was raised"
+        },
+        "resolution_hours": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Resolution SLA"],
+          "data_type": "double",
+          "description": "Hours to resolve"
+        },
+        "satisfaction_score": {
+          "classifications": ["INTERNAL"],
+          "terms": ["CSAT"],
+          "data_type": "int",
+          "description": "Post resolution satisfaction score"
+        }
+      }
+    }
+  }
+}

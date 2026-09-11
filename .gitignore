@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+
+# Runtime state: SQLite metadata, uploads, models, generated output.
+data/
+
+# Node is only needed to build static/; the built bundle is committed.
+frontend/node_modules/

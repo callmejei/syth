@@ -1,0 +1,143 @@
+{
+  "_comment": "Classifications for the customers/orders sample. Seeded into the local Apache Atlas by scripts/seed_atlas.py --input, so the governance path runs against a real catalog rather than a stub.",
+  "tables": {
+    "customers": {
+      "qualified_name": "retail.customers@poc",
+      "guid": "",
+      "columns": {
+        "customer_id": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Customer ID"],
+          "data_type": "string",
+          "description": "Surrogate customer key"
+        },
+        "full_name": {
+          "classifications": ["PII", "NAME"],
+          "terms": ["Customer Name"],
+          "data_type": "string",
+          "description": "Customer full name"
+        },
+        "email": {
+          "classifications": ["PII", "EMAIL"],
+          "terms": ["Contact Email"],
+          "data_type": "string",
+          "description": "Primary contact email"
+        },
+        "phone": {
+          "classifications": ["PII", "PHONE"],
+          "terms": ["Contact Number"],
+          "data_type": "string",
+          "description": "Mobile number"
+        },
+        "national_id": {
+          "classifications": ["PII", "NATIONAL_ID"],
+          "terms": ["National Registration Identity"],
+          "data_type": "string",
+          "description": "Government issued identity number"
+        },
+        "dob": {
+          "classifications": ["QUASI_IDENTIFIER", "DATE_OF_BIRTH"],
+          "terms": ["Date of Birth"],
+          "data_type": "date",
+          "description": "Customer date of birth"
+        },
+        "gender": {
+          "classifications": ["QUASI_IDENTIFIER"],
+          "terms": ["Gender"],
+          "data_type": "string",
+          "description": "Self declared gender"
+        },
+        "city": {
+          "classifications": ["QUASI_IDENTIFIER"],
+          "terms": ["City"],
+          "data_type": "string",
+          "description": "City of residence"
+        },
+        "segment": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Customer Segment"],
+          "data_type": "string",
+          "description": "Loyalty tier"
+        },
+        "annual_income": {
+          "classifications": ["SENSITIVE", "FINANCIAL"],
+          "terms": ["Declared Annual Income"],
+          "data_type": "double",
+          "description": "Self declared annual income"
+        },
+        "credit_score": {
+          "classifications": ["SENSITIVE"],
+          "terms": ["Credit Score"],
+          "data_type": "int",
+          "description": "Internal credit score"
+        },
+        "signup_date": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Signup Date"],
+          "data_type": "date",
+          "description": "Account creation date"
+        },
+        "is_active": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Active Flag"],
+          "data_type": "boolean",
+          "description": "Whether the account is active"
+        }
+      }
+    },
+    "orders": {
+      "qualified_name": "retail.orders@poc",
+      "guid": "",
+      "columns": {
+        "order_id": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Order ID"],
+          "data_type": "bigint",
+          "description": "Surrogate order key"
+        },
+        "customer_id": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Customer ID"],
+          "data_type": "string",
+          "description": "Ordering customer"
+        },
+        "order_date": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Order Date"],
+          "data_type": "date",
+          "description": "Date the order was placed"
+        },
+        "amount": {
+          "classifications": ["SENSITIVE", "FINANCIAL"],
+          "terms": ["Order Value"],
+          "data_type": "double",
+          "description": "Basket value"
+        },
+        "category": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Product Category"],
+          "data_type": "string",
+          "description": "Top level product category"
+        },
+        "payment_method": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Payment Method"],
+          "data_type": "string",
+          "description": "How the order was paid"
+        },
+        "status": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Order Status"],
+          "data_type": "string",
+          "description": "Fulfilment status"
+        },
+        "items": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Item Count"],
+          "data_type": "int",
+          "description": "Number of items in the basket"
+        }
+      }
+    }
+  }
+}

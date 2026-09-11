@@ -1,0 +1,19 @@
+# All Apache-2.0 / BSD / MIT. No Business Source License dependencies:
+# the SPN engine is our own code, so nothing here restricts production use.
+#
+# Dropped vs the Docker build: celery, redis, psycopg, boto3, alembic.
+# A CML Application is one process -- jobs run in a thread pool, metadata is in
+# SQLite, and artifacts stay on the project filesystem.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pydantic==2.10.4
+pydantic-settings==2.7.0
+sqlalchemy==2.0.36
+python-multipart==0.0.20
+pyyaml==6.0.2
+httpx==0.28.1
+pandas==2.2.3
+numpy==2.2.1
+pyarrow==18.1.0
+scikit-learn==1.6.0
+scipy==1.14.1

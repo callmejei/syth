@@ -1,0 +1,82 @@
+{
+  "_comment": "Atlas classifications for the OCBC DataCraft sample customer extract. Column names match the CSV header exactly; the table name is the CSV stem, which is how the catalogue lookup resolves it. Tag choice drives the synthesis strategy, so the mapping is deliberate rather than decorative -- see app/atlas/policy.py.",
+  "tables": {
+    "ocbc_datacraft_sample_customers": {
+      "description": "Retail banking customer master extract",
+      "columns": {
+        "Customer_ID": {
+          "classifications": ["IDENTIFIER"],
+          "terms": ["Customer Identifier"],
+          "data_type": "string",
+          "description": "Primary customer identifier; surrogate issued in synthetic output"
+        },
+        "Full_Name": {
+          "classifications": ["PII", "NAME"],
+          "terms": ["Customer Name"],
+          "data_type": "string",
+          "description": "Customer full name"
+        },
+        "Date_of_Birth": {
+          "classifications": ["DATE_OF_BIRTH", "QUASI_IDENTIFIER"],
+          "terms": ["Date of Birth"],
+          "data_type": "date",
+          "description": "Birth date. Tagged as a quasi-identifier rather than PII on purpose: PII would pseudonymise it away, whereas generalising keeps the birth year, which is what age analysis actually needs."
+        },
+        "Gender": {
+          "classifications": ["GENDER", "QUASI_IDENTIFIER"],
+          "terms": ["Gender"],
+          "data_type": "string",
+          "description": "Re-identifying in combination with birth year and city"
+        },
+        "Nationality": {
+          "classifications": ["QUASI_IDENTIFIER"],
+          "terms": ["Nationality"],
+          "data_type": "string",
+          "description": "Rare values are strongly re-identifying in a small population"
+        },
+        "Occupation": {
+          "classifications": ["QUASI_IDENTIFIER"],
+          "terms": ["Occupation"],
+          "data_type": "string",
+          "description": "Re-identifying in combination with income and city"
+        },
+        "Annual_Income_SGD": {
+          "classifications": ["FINANCIAL", "SENSITIVE"],
+          "terms": ["Annual Income"],
+          "data_type": "int",
+          "description": "Declared annual income"
+        },
+        "Account_Type": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Account Type"],
+          "data_type": "string",
+          "description": "Product category; not restricted"
+        },
+        "Credit_Score": {
+          "classifications": ["CREDIT_SCORE", "SENSITIVE"],
+          "terms": ["Credit Score"],
+          "data_type": "int",
+          "description": "Internal credit score"
+        },
+        "Account_Balance_SGD": {
+          "classifications": ["FINANCIAL", "SENSITIVE"],
+          "terms": ["Account Balance"],
+          "data_type": "double",
+          "description": "Current account balance"
+        },
+        "City": {
+          "classifications": ["QUASI_IDENTIFIER"],
+          "terms": ["City"],
+          "data_type": "string",
+          "description": "Residential city; re-identifying in combination with birth year and gender"
+        },
+        "Customer_Since": {
+          "classifications": ["INTERNAL"],
+          "terms": ["Relationship Start Date"],
+          "data_type": "date",
+          "description": "Relationship start date; not restricted"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,13 @@
+table,column,classifications,terms,description
+ocbc_datacraft_sample_customers,Customer_ID,IDENTIFIER,Customer ID,Surrogate customer key
+ocbc_datacraft_sample_customers,Full_Name,PII;NAME,Customer Name,Customer full name
+ocbc_datacraft_sample_customers,Date_of_Birth,QUASI_IDENTIFIER;DATE_OF_BIRTH,Date of Birth,Customer date of birth
+ocbc_datacraft_sample_customers,Gender,QUASI_IDENTIFIER,Gender,Self declared gender
+ocbc_datacraft_sample_customers,Nationality,QUASI_IDENTIFIER,Nationality,Country of citizenship
+ocbc_datacraft_sample_customers,Occupation,INTERNAL,Occupation,Declared occupation
+ocbc_datacraft_sample_customers,Annual_Income_SGD,SENSITIVE;FINANCIAL,Annual Income,Declared annual income in SGD
+ocbc_datacraft_sample_customers,Account_Type,INTERNAL,Account Type,Product tier
+ocbc_datacraft_sample_customers,Credit_Score,SENSITIVE,Credit Score,Internal credit score
+ocbc_datacraft_sample_customers,Account_Balance_SGD,SENSITIVE;FINANCIAL,Account Balance,Balance in SGD
+ocbc_datacraft_sample_customers,City,QUASI_IDENTIFIER,City,City of residence
+ocbc_datacraft_sample_customers,Customer_Since,INTERNAL,Customer Since,Relationship start date

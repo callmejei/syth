@@ -1,0 +1,77 @@
+# Corrections applied on top of ../../../schema.yaml at load time.
+#
+# schema.yaml was reconstructed by OCR from a printed scan, so it carries
+# token-level damage. We repair it here instead of editing the source file, so
+# that schema.yaml stays byte-identical to what was scanned and can still be
+# diffed against the vendor's original if we ever obtain it.
+#
+# Each entry records WHAT was wrong and WHY we believe the correction, so this
+# doubles as the list of things to verify against the real source.
+
+# Keys whose definition was damaged. These are merged over the parsed YAML.
+patch:
+  # DEFECT: the scan lost the `total_participate:` key line (it was misread as
+  # the text "tal eato:" and swallowed into child_column_names' documentation
+  # block). Everything that belonged to total_participate -- hidden/boolean/
+  # "total participation" -- was therefore absorbed into child_column_names,
+  # turning a multi-select column picker into a checkbox.
+  # EVIDENCE: scan0005.pdf pages 10-11 render "child column names" as a
+  # multi-value chip input holding `cif`, matching parent_column_names.
+  child_column_names:
+    type: select
+    multi: true
+    options: table-columns
+    label: child column names
+    groupTag: Relational Schema
+    required: true
+    tags:
+      - High Impact
+    documentation: |
+      Please make sure that the order corresponds to the selections in
+      `parent_column_names` (and hence a quick check is that they have the same
+      number of columns selected).
+
+  # DEFECT: OCR read "timedelta" as "Umedeita".
+  timedelta_columns:
+    label: timedelta columns
+
+  # DEFECT: `options: columns` is not a source the UI knows; every sibling
+  # column-picker in this group uses `table-columns`.
+  non_std_columns:
+    options: table-columns
+
+  # DEFECT: OCR read "timedelta" as "timedeita" in an enum value.
+  default_mixed_kwargs.base_type:
+    options:
+      - label: numerical
+        value: numerical
+      - label: datetime
+        value: datetime
+      - label: timedelta
+        value: timedelta
+
+# Keys the scan dropped entirely and that we restore.
+restore:
+  total_participate:
+    hidden: true
+    type: boolean
+    initialValue: false
+    label: total participation
+    groupTag: Relational Schema
+    tags:
+      - Medium Impact
+    documentation: |
+      Whether total participation is a constraint on this foreign key. Total
+      participation means that every parent row has at least one child row.
+
+# `foreign_keys.schemas` lost child_column_names' sibling entries to the same
+# damage; restate the item schema explicitly.
+schemas:
+  foreign_keys:
+    - parent_table_name
+    - parent_column_names
+    - child_column_names
+
+# Free-text label repairs that do not change behaviour.
+labels:
+  Umedeita columns: timedelta columns

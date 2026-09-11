@@ -1,0 +1,51 @@
+name: Synthforge
+description: >-
+  Synthetic data platform POC. SPN engine, Apache Atlas driven data protection
+  policy, relational integrity across tables. Runs as a single CML Application.
+author: DataCraft
+specification_version: 1.0
+prototype_version: 1.0
+
+environment_variables:
+  ATLAS_ENABLED:
+    default: "false"
+    description: >-
+      Set to true only if this CML workspace can reach an Atlas instance. When
+      false the platform reads classifications from an imported catalog, or from
+      the bundled demo fixture, and every report names which source was used.
+  ATLAS_BASE_URL:
+    default: "http://localhost:21000"
+    description: "Atlas endpoint, used only when ATLAS_ENABLED is true."
+  JOB_WORKERS:
+    default: "2"
+    description: >-
+      Training/generation jobs run concurrently in this many threads inside the
+      Application container. Raise only with the Application's CPU allocation.
+
+runtimes:
+  - editor: Workbench
+    kernel: Python 3.10
+    edition: Standard
+
+tasks:
+  - type: run_session
+    name: Install dependencies
+    script: bootstrap.py
+    arguments: None
+    short_summary: Installing Python dependencies.
+    kernel: python3
+    cpu: 2
+    memory: 4
+
+  - type: start_application
+    name: Synthforge
+    subdomain: synthforge
+    script: cml_app.py
+    short_summary: Starting the Synthforge application.
+    long_summary: >-
+      Serves the UI and the API from one process on CDSW_APP_PORT. Metadata is
+      in SQLite under data/, artifacts on the project filesystem.
+    cpu: 2
+    memory: 8
+    environment_variables:
+      TASK_TYPE: START_APPLICATION

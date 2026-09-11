@@ -1,0 +1,238 @@
+/* Self-hosted variable fonts. Loaded from node_modules and bundled by Vite, so
+   the app makes no request to a font CDN at runtime and works with no network. */
+@import '@fontsource-variable/inter';
+@import '@fontsource-variable/plus-jakarta-sans';
+@import '@fontsource-variable/jetbrains-mono';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+  Semantic colour tokens - OCBC DataCraft.
+
+  Accent values are sampled from the supplied logo artwork (#DC0000 with a
+  #B0000C gradient end), not from a guess at OCBC brand guidelines.
+
+  Note the split between --accent and --accent-text. The brand red on white is
+  4.0:1, which fails the 4.5:1 body-text minimum, so text uses the deeper
+  crimson while fills keep the true brand red. In dark mode the brand red is
+  lifted, because #DC0000 on a near-black canvas is unreadable.
+
+  Components reference roles (surface, border, text-muted, accent) rather than
+  raw values, so a theme is a single set of variable swaps rather than a hunt
+  through class names. Both themes are defined here together and their contrast
+  is checked separately -- a dark theme built by inverting a light one produces
+  vibrating saturated colour and text that fails on a dark ground.
+
+  Values are space-separated RGB channels so Tailwind can apply opacity.
+*/
+@layer base {
+  :root {
+    color-scheme: light;
+
+    /* Backgrounds, back to front */
+    --canvas: 248 249 251;
+    --surface: 255 255 255;
+    --surface-raised: 255 255 255;
+    --surface-sunken: 243 245 248;
+    --overlay: 15 23 42;
+
+    /* Lines */
+    --border: 226 231 238;
+    --border-strong: 203 211 222;
+
+    /* Text: 15.9:1, 7.2:1 and 4.8:1 on --surface */
+    --text: 24 33 46;
+    --text-muted: 71 85 105;
+    --text-subtle: 100 116 139;
+
+    /* Brand */
+    --accent: 220 0 0;
+    --accent-hover: 176 0 12;
+    --accent-fg: 255 255 255;
+    --accent-subtle: 254 236 236;
+    --accent-text: 176 0 12;
+
+    /* Status. `-text` variants are the accessible pairing for `-subtle`. */
+    --success: 5 150 105;
+    --success-subtle: 209 250 229;
+    --success-text: 4 108 78;
+    --warning: 217 119 6;
+    --warning-subtle: 254 243 199;
+    --warning-text: 146 64 14;
+    --danger: 225 29 72;
+    --danger-subtle: 255 228 230;
+    --danger-text: 159 18 57;
+    --danger-fg: 255 255 255;   /* 4.9:1 on --danger */
+    --info: 37 99 235;
+    --info-subtle: 219 234 254;
+    --info-text: 29 78 216;
+    --violet: 124 58 237;
+    --violet-subtle: 237 233 254;
+    --violet-text: 91 33 182;
+
+    /* Deep brand crimson, the far end of the logo's gradient. Used for the
+       login brand panel; white on it is 8.9:1. */
+    --brand-deep: 124 0 12;
+
+    --shadow-color: 15 23 42;
+    --shadow-strength: 0.06;
+  }
+
+  :root[data-theme='dark'] {
+    color-scheme: dark;
+
+    /* Not black. A very dark blue-grey keeps the surfaces from looking like
+       holes and gives elevation somewhere to go. */
+    --canvas: 12 15 21;
+    --surface: 20 25 34;
+    --surface-raised: 27 33 44;
+    --surface-sunken: 16 20 28;
+    --overlay: 2 4 8;
+
+    --border: 40 48 62;
+    --border-strong: 58 68 86;
+
+    /* 15.2:1, 7.4:1 and 5.1:1 on --surface */
+    --text: 237 241 248;
+    --text-muted: 165 176 194;
+    --text-subtle: 138 149 168;
+
+    /* Lightened and desaturated: the light-mode indigo is far too dark to read
+       against a dark ground, and full saturation on dark vibrates. */
+    --accent: 244 63 63;
+    --accent-hover: 248 113 113;
+    --accent-fg: 26 8 8;
+    --accent-subtle: 58 16 18;
+    --accent-text: 252 165 165;
+
+    --success: 52 211 153;
+    --success-subtle: 6 46 38;
+    --success-text: 110 231 183;
+    --warning: 251 191 36;
+    --warning-subtle: 52 35 6;
+    --warning-text: 252 211 77;
+    --danger: 251 113 133;
+    --danger-subtle: 60 12 26;
+    --danger-text: 253 164 175;
+    --danger-fg: 76 5 25;      /* 8.1:1 on --danger */
+    --info: 96 165 250;
+    --info-subtle: 12 32 62;
+    --info-text: 147 197 253;
+    --violet: 167 139 250;
+    --violet-subtle: 39 25 71;
+    --violet-text: 196 181 253;
+
+    --brand-deep: 88 0 10;
+
+    --shadow-color: 0 0 0;
+    --shadow-strength: 0.5;
+  }
+
+  html {
+    background-color: rgb(var(--canvas));
+  }
+
+  body {
+    @apply bg-canvas text-fg antialiased;
+    font-family: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+    /* Inter's contextual alternates and disambiguation forms; `ss01` gives the
+       open digits that read better in dense tables. */
+    font-feature-settings: 'cv05' 1, 'ss01' 1;
+  }
+
+  /* Plus Jakarta Sans on headings: geometric enough to carry a page without the
+     corporate-neutral feel of setting everything in one family. */
+  h1, h2, h3, .font-display {
+    font-family: 'Plus Jakarta Sans Variable', 'Inter Variable', sans-serif;
+    letter-spacing: -0.018em;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono Variable', ui-monospace, monospace;
+    font-feature-settings: 'calt' 0;
+  }
+
+  :where(a, button, input, select, textarea, [tabindex]):focus-visible {
+    @apply outline-none ring-2 ring-accent ring-offset-2;
+    --tw-ring-offset-color: rgb(var(--canvas));
+    border-radius: 0.375rem;
+  }
+
+  ::selection {
+    background-color: rgb(var(--accent) / 0.25);
+  }
+
+  /* Scrollbars follow the theme; a bright scrollbar on a dark page is a giveaway
+     that only the content was themed. */
+  * {
+    scrollbar-color: rgb(var(--border-strong)) transparent;
+    scrollbar-width: thin;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-xl border border-line bg-surface;
+    box-shadow:
+      0 1px 2px rgb(var(--shadow-color) / var(--shadow-strength)),
+      0 1px 3px rgb(var(--shadow-color) / calc(var(--shadow-strength) * 0.6));
+  }
+  .card-raised {
+    @apply rounded-xl border border-line bg-surface-raised;
+    box-shadow:
+      0 4px 6px -1px rgb(var(--shadow-color) / var(--shadow-strength)),
+      0 10px 20px -6px rgb(var(--shadow-color) / calc(var(--shadow-strength) * 1.2));
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer select-none items-center justify-center gap-2 rounded-lg px-3.5 py-2
+           text-sm font-medium transition-[background-color,border-color,color,box-shadow,transform]
+           duration-150 ease-out active:scale-[0.985] disabled:cursor-not-allowed disabled:active:scale-100;
+  }
+  .btn-primary {
+    @apply btn bg-accent text-accent-fg hover:bg-accent-hover disabled:opacity-50;
+    box-shadow: 0 1px 2px rgb(var(--shadow-color) / calc(var(--shadow-strength) * 1.5));
+  }
+  .btn-ghost {
+    @apply btn border border-line-strong bg-surface text-fg-muted hover:bg-sunken hover:text-fg
+           disabled:opacity-50;
+  }
+  .btn-danger {
+    @apply btn bg-danger text-danger-fg hover:opacity-90 disabled:opacity-50;
+    box-shadow: 0 1px 2px rgb(var(--shadow-color) / calc(var(--shadow-strength) * 1.5));
+  }
+  .btn-link {
+    @apply inline-flex min-h-[34px] cursor-pointer items-center gap-1.5 rounded-md px-2 text-xs
+           font-medium text-accent-text transition hover:bg-accent-subtle;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-line-strong bg-surface px-3 py-2 text-sm text-fg
+           outline-none transition placeholder:text-fg-subtle
+           focus:border-accent focus:ring-2 focus:ring-accent/25;
+  }
+  .label {
+    @apply text-sm font-medium text-fg-muted;
+  }
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium;
+  }
+
+  /* Numeric columns line up only with tabular figures; proportional digits make
+     stacked numbers ragged and shift width as values change. */
+  .num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+  }
+}

@@ -1,0 +1,4660 @@
+# =============================================================================
+# Reconstructed from scan0006.pdf (28-page scan of a printed YAML schema,
+# 4 logical pages per sheet, ~110 pages / ~5,000 lines).
+#
+# Rebuilt by OCR + structural reconstruction on 2026-08-13.
+# Keys, types, initialValue/min/max and option enums are high confidence.
+# Free-text `documentation:` blocks may still contain OCR artifacts and the
+# original line breaks inside them could not be recovered (long lines were
+# re-wrapped by the printer). Verify against the original source if available.
+# =============================================================================
+# ============ Groups ============
+IO Format of Data:
+  type: group-tag
+  documentation: |
+    Arguments related to data loading and understanding from disk.
+Column Type Inference:
+  type: group-tag
+  documentation: |
+    Parameters helping the decision of the data type of each column. ht contains parameters either directly specifying
+    the data types, or the policies on how to distinguish different data types if the data type is not directly
+    specified.
+N/A Handling:
+  type: group-tag
+  documentation: |
+    Paramatets specifying policies to remove N/A values.
+Default Arguments by Data Type:
+  type: group-tag
+  documentation: |
+    Default parameter settings for each data type specifically.
+Column Data Specification:
+  type: group-tag
+  documentation: |
+    Parameters helping the model to understand WHAT the data is. itcontains parameters on the format and basic
+    properties of the column.
+Data Encoding Arguments:
+  type: group-tag
+  documentation: |
+    Parameters determining HOW to represent the data in a tensor which Is subsequently fed into the neural networks.
+Training Arguments:
+  type: group-tag
+  documentation: |
+    General training arguments for typical machine learning tasks,
+Generation Arguments:
+  type: group-tag
+  documentation: |
+    Generation arguments for the synthetic data.
+Specification of Each Column:
+  type: group-tag
+  documentation: |
+    Parameter settings for each column separately,
+Relational Schema:
+  type: group-tag
+  documentation: |
+    Parameters that specify the relationship between different tables.
+Aggregation Specification:
+  type: group-tag
+  documentation: |
+    Arguments specifying how to aggregate, and hence summary the content of a child table so the information can be
+    aligned with the parent table.
+Relational Modeling Parameters:
+  type: group-tag
+  documentation: |
+    Arguments for relational modeling. BEAT AE AEE AEE AAT HE EE Disk LO APSE AEE AE ATE EERE TEP PEEE A SETAE A EE AEE
+delimiter:
+  type: skipped # text
+  initialValue: '""'
+  label: column separator
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    delimiter` parameter.
+    Character or regex pattern to treat as the delimiter. If not provided, the C engine cannot automatically detect the
+    Separator, but the Python parsing engine can, meaning the latter will be used and automatically detect the
+    Separator from only the first valid row of the file by Python's builtin sniffer tool, csv.Sniffer.
+    In addition, separators longer than 1 character and different from "\s+' will be interpreted as regular
+    expressions and will also force the use of the Python parsing engine. Note that regex delimiters are prone to
+    ignoring quoted data. Regex example: `\rit`
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+header:
+  type: skipped # text
+  initialValue: infer
+  label: data header
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html) Gdocs/stable/referenca/apl/pandas,read_csv.html)
+    header` parameter.
+    Row number(s) containing column labels and marking the start of the data (zero-indexed), Default behavior
+    {8 to Infer the column names: if no names are passed the behavior is identical to ` data header=0` and column names
+    are inferred from the first line of the file, if column names are passed explicitly to names then the behavior
+    is identical to ` data heador=null`. Explicitly pass * data hoader=0" to be able to replace existing names,
+    MultiIndex is disallowed in our system. Note that this parameter ignores commented lines and empty lines if
+    skip blank Unes=True`, so * data header=0` denotes the first line of data rather than the first line of the fite.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+names:
+  type: skipped
+index_col:
+  type: skipped # text
+  label: index column name or index
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    index_col" parameter.
+    Column(s) to use es row label(s), denoted oither by column labels or column indices. MultiIndex is not allowed
+    in our system. The index column will not involve in later Generation and the synthetically generated date will not
+    be able to learn and generate any information from the index column.
+    - *Note**: "index column name or indexefalse` can be used to force pandas to not use the first column as the index,
+    e.g., when you have a malformed file with delimiters at the ond of each line.
+  tags:
+    - Low impect
+  groupTag: IO Format of Data
+usecols:
+  type: skipped
+dtype:
+  type: skipped
+engine:
+  type: skipped # select
+  label: csv parser engine
+  options:
+    - label: c
+      value: c
+    - label: python
+      value: python
+    - label: pyarrow
+      value: pyarrow
+    - label: None
+      value: null
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html) docs/stablo/reference/api/pandas.road_csv,html)
+    Parser engine to use. The C and pyarrow engines are faster, while the python engine is currently more
+    feature-complete. Multithreading {s currently only supported by the pyarrow engine.
+    Then engine * pyarrow` is newin `pandas` version 1.4.0:. It was added a8 an experimental engine, and some features
+    are unsupported, or may not work correctly, with this engine.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+true_values:
+  type: skipped # array # null or empty list are equivalent
+  of: string
+  label: true representations
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    true_values` parameter.
+    Values to consider as True in addition to case-insensitive variants of True`.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+false_values:
+  type: skipped # array # null or empty list are equivalent
+  of: string
+  label: false representations
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html) Gocs/stable/reference/apV/pandas.read_csv.html)
+    false_values` parameter.
+    Values to consider as False in addition to case-insensitive variants of `False`.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+skipinitialspace:
+  type: skipped # boolean
+  initialValue: false
+  required: true
+  label: skip spaces after delimiter
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    skipinitiaispace` parameter.
+    Skip spaces after delimiter.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+skiprows:
+  type: skipped
+skipfooter:
+  type: skipped # number
+  min: 0
+  decimal: faisa
+  required: true
+  label: number of bottom lines to skip
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    - skipfooter` parameter.
+    Number of lines at bottom of file to skip (Unsupported with ` csv parser enginee'c"` ).
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+nrows:
+  type: skipped # number
+  min: 0
+  decimal: false
+  required: false
+  label: number of rows to read
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    nrows* parameter.
+    Number of rows of file to read. Useful for reading pieces of large files.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+na_values: # empty list != null
+  type: skipped # array
+  of: text
+  initialValue: []
+  required: true
+  label: N/A representations
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    na_values" parameter.
+    Additional strings to recognize as ~ NA/NaN`. This applies to the entire " DataFrame`.
+    This N/A representation pass happens at the IO stage, and hence the original representation of N/Ais not seen by
+    our system's data processor. Therefore, if one wants to maintain the N/A representation In the original data,
+    please consider changing `N/A equivalences` instead of this parameter.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+keep_default_na:
+  type: skipped # boolean
+  required: true
+  initialValue: false
+  label: keep default N/A representations
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    - keep_default_na` parameter.
+    Besides the ones specified in ' N/A representations`, whether to consider "", "#N/A", "WIN/A N/A", "#NAe, "<1. IND",
+    1. 4QNAN", "-NaN`", "-nan", "1.41ND", "1.4QNAN", "<NA>", "N/A", "NA" "NULL" "NaN, None", "n/a", "nan", "null",
+    which are default N/A representations understood by * pd.read_csv", as N/A. Also beware that if this is set tue
+    and the N/A in the dataset is indeed represented as one of the values mentioned, by the same arguments 2s
+    N/A representations`, our system is unable to recover the original N/A representation.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+na_filter:
+  type: skipped # boolean
+  required: true
+  initialValue: false
+  label: detect N/A representations in 1/O
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    na_filter" parameter.
+    Detect missing value markers (empty strings and the value of na_values). In data without any NA values, passing
+    detect N/A representations in I/O=false` can improve the performance of reading a large file.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+skip_blank_lines:
+  type: skipped # boolean
+  required: true
+  initialValue: true
+  label: skip blank linas
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    - skip_blank_lines` parameter,
+    if true, skip over blank lines rather than interpreting as "NaN values.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+parse_dates:
+  type: skipped
+infer_datetime_format:
+  type: skipped
+keep_date_col:
+  type: skipped
+date_format:
+  type: skipped
+dayfirst#io:
+  type: skipped
+cache_dates:
+  type: skipped
+iterator:
+  type: skipped
+chunksize:
+  type: skipped
+compression:
+  type: skipped
+thousands:
+  type: skipped # text
+  maxLength: 1
+  minLength: 1
+  label: thousand separator character
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    thousands" parameter.
+    Character acting as the thousands separator in numerical values. If not provided, itis assumed that no thousand
+    separator is present in the data. Note that this happens at file II/O stage, so our data processor will not know
+    the actual separator used. The output data will not maintain the same thousands separator. To keep the thousand
+    separators in the output, may consider specify * separator` parameter for numerical columns.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+decimal:
+  type: skipped # text
+  minLength: 1
+  maxLength: 1
+  label: decimal point representation
+  initialValue: '\.'
+  required: true
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    decimal` parameter.
+    Character to recognize as decimal point (c.g., use | for European data), Note that this happens at file /O
+    Stage, So our data processor will not know the actual decimal point representation. The output file will use the
+    more commonly used * as decimal point.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+lineterminator:
+  type: skipped # toxt
+  minLength: 1
+  maxLength: 1
+  label: line break representation
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    lineterminator` parameter.
+    Character used to denote a line break. Only valid with C parser.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+quotechar:
+  type: skipped # text
+  minLength: 1
+  maxLength: 1
+  label: quotation mark character
+  initialValue: '''""'
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    quotechar` parameter.
+    Character used to denote the stert and end of a quoted item. Quoted items can include the column separator" and
+    it will be ignored,
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+quoting:
+  type: skipped # select
+  label: quotation policy
+  options:
+    - label: minimal
+      value: 0
+    - label: all
+      value: 1
+    - label: non-numeric
+      value: 2
+    - label: none
+      value: 3
+  initialValue: 0
+  required: true
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html) Gocs/stable/reforence/api/pandas.read_csv,html)
+    quoting" parameter.
+    Policy for quotation mark occurrences. Its options are:
+    - * minimai` + only fields containing speciat characters are quoted (@.g., Characters defined in
+    quotation mark
+    character`, * column separator`, or "line break representation`.
+    - all`: all fieids are quoted,
+    non-numeric": all non-numeric fields are quoted.
+    - none`: no fleld is quoted.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+doublequote:
+  type: skipped # boolean
+  required: true
+  initialValue: true
+  label: double quote allowed
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    double_quote" parameter.
+    When * quotation mark character` is specified and quoting is not "nonee, indicate whether OF not to interpret two
+    consecutive "quotation mark character` elements INSIDE a field ss a single ~ quotation mark character` element.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+escapechar:
+  type: skipped # toxt
+  minLength: 1
+  maxLength: 1
+  label: escape character
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    escapechar` parameter.
+    Character used to escape other characters.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+comment:
+  type: skipped # text
+  minLength: 1
+  maxLength: 1
+  label: comment initial character
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    comment" parameter,
+    Character indicating that the remainder of line should not be parsed. If found at the beginning of a line, the
+    line will be ignored altogether. This parameter must be a single character. Like empty lines (as long as
+    skip blank lines*true` ), fully commented lines are ignored by the parameter header. For example, if comment="#'*,
+    parsing c #empty\na,b,c\n1,2,3` with ` data header=0" will result in `a,b,c` being treated as the header.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+encoding:
+  type: skipped # select
+  label: data encoding method
+  options:
+    - label: UTF-8
+      value: utf-8
+    - label: UTF-7
+      value: u7
+    - label: UTF-16
+      value: utf-16
+    - label: ASCH
+      value: ascii
+    - label: Latin-1
+      value: latin-1
+    - label: BIGS
+      value: csbig5
+    - label: EUC-JP
+      value: u-jis
+    - label: EUC-KR
+      value: euckr
+    - label: EUC-CN
+      value: euccn
+    - label: HZ
+      value: hz
+  required: true
+  initialValue: utf-8
+  documentation: |
+    Inhorited from [` pd.read_csv" I{https://pandas, pydata.org/pandas-
+    encoding` parameter.
+    Encoding to use for UTF when reading/writing (ex. `utf-8').
+    [List of Python standard encodings)(https://docs. python.org/3fibrary/codecs. htmi#standard-encodings).
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+encoding_errors:
+  type: skipped # select
+  required: true
+  initialValue: strict
+  label: encoding error handling method
+  options:
+    - label: strict
+      value: strict
+    - label: ignore
+      value: ignore
+    - label: replace
+      value: replace
+    - label: backslash replace
+      value: backslashreplace
+    - label: surrogate escape
+      value: surrogateescape
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    encoding_errors* parameter.
+    How encoding errors are treated.
+    [List of possible values}(https://docs, python.org/3/library/codecs.html#error-handlers).
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+dialect:
+  type: skipped
+on_bad_lines:
+  type: skipped # select
+  options:
+    - label: error
+      value: error
+    - label: warn
+      value: warn
+    - label: skip
+      value: skip
+  initialValue: error
+  required: true
+  label: error handling per line
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    on_bad_lines" parameter.
+    Specifies what to do upon encountering a bad line (a line with too many fields). Allowed values are:
+    - "*error**: raise an Exception when a bad line is encountered;
+    - **wam**: raise a warning when a bad line is encountered and skip that line;
+    - **skip**: skip bad lines without raising or warning when they are encountered.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+delim_whitespace:
+  type: skipped # boolean
+  required: true
+  initialValue: false
+  label: delimit with whitespaces
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    detim_whitespacee paramete:.
+    Specifies whether or not whitespace (e.g. `* or `\t`) will be used as the `column separator`. Equivalent to
+    Setting ` column separator="\s+"" - If this option is set to true, nothing should be passed in for the
+    column separator` parameter.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+low_memory:
+  type: skipped # boolean
+  initialValue: true
+  required: true
+  label: low memory
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    Internally process the file in chunks, resulting in lower memory use while parsing, but possibly mixed type
+    inference. (Only valid with C parser).
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+memory_map:
+  type: skipped # bootean
+  initialValue: false
+  required: true
+  label: memory map
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    memory_map" parameter,
+    Map the file object directly onto memory and accass the date directly from there. Using this option can improve
+    performance because there Is no longer any I/O overhead.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+float_precision:
+  type: skipped # select
+  initialValue: high # backend may pass null, but it's equivatent to high
+  label: float precision
+  options:
+    - label: high
+      value: high
+    - label: legacy
+      value: legacy
+    - label: round-trip
+      value: round-trip
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    - float_precision" parameter.
+    Specities which converter the C engine should use for floating-point values. The options are:
+    - high`: the ordinary converter;
+    - * legacy": the original lower precision pandas converter;
+    - `round-trip`: the round-trip converter.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+storage_options:
+  type: skipped
+dtype_backend:
+  type: skipped # select
+  initialValue: numpy_nullable
+  required: true
+  label: Dtype backend
+  options:
+    - label: numpy nullable dtype backed
+      value: numpy_nullable
+    - label: pyarrow-backed nullable
+      value: pyarrow
+  documentation: |
+    Inherited from [`pd.read_csv`](https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.read_csv.html)
+    Back-end data type applied to the resuttant DataFrame (still experimental), Behaviour is as follows:
+    - numpy nullable dtype backed`: returns nullable-dtype-backed DataFrama;
+    - ' pyarrow-backed nullable`: returns pyarrow-backed nullabie ` ArrowDtype* DataFrame.
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+dataArgs.data_format_args:
+  type: skipped
+data_format_args:
+  type: skipped # object
+  fields:
+    - delimiter
+    - header
+    - names
+    - index_col
+    - usecols
+    - dtype
+    - engine
+    - true_values
+    - false_values
+    - skipinitialspace
+    - skiprows
+    - skipfooter
+    - nrows
+    - na_values
+    - keep_default_na
+    - na_filter
+    - skip_blank_lines
+    - parse_dates
+    - infer_datetime_format
+    - keep_date_col
+    - date_format
+    - 'dayfirst#io'
+    - cache_dates
+    - iterator
+    - chunksize
+    - compression
+    - thousands
+    - decimal
+    - lineterminator
+    - quotechar
+    - quoting
+    - doublequote
+    - escapechar
+    - comment
+    - encoding
+    - encoding_errors
+    - dialect
+    - on_bad_lines
+    - delim_whitespace
+    - low_memory
+    - memory_map
+    - float_precision
+    - storage_options
+    - dtype_backend
+  tags:
+    - Low Impact
+  groupTag: IO Format of Data
+  label: Data # ormat args
+# ============ Data Pipeline General ============
+fill_sys_default:
+  type: skipped
+  initialValue: false # always set to false
+dataArgs.drop_columns:
+  type: skipped
+  label: drop columns
+  initialValue: []
+drop_columns:
+  options: columns
+  type: select
+  multi: true
+  label: drop columns
+  documentation: |
+    Columns to exclude, Removing irrelevant columns can improve the synthetic data produced.
+    Columns should only be selected once and not overlap with mutually exclusive parameters marked as Group A.
+    Itis highly suggested to drop non-statistics-bearing columns such as person names, serial IDs,
+    emall addrosses, etc, and high-cardinality non-continuous columns like Zip code and city names all over the world.
+    Itis also highly suggested to drop unimportant columns, which is decided by domain knowledge of the dataset, such
+    as those columns with >90% missing values, columns with only 7 possible values, etc.
+    ## Caveat
+    By our current Ul implementation, we highly suggest you drop columns in 3A rather in 3B, because editing columns to
+    drop in 3B will require you to switch to JSON mode to manually delete the column from column-specific arguments`.
+  initialValue: []
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+dataArgs.dropna_columns:
+  type: skipped
+dropna_columns:
+  options: columns
+  type: skipped # select
+  multi: true
+  label: drop N/A columns
+  documentation: |
+    Columns to remove N/A rows from. This is suggested to include columns with a small proportion of missing value and
+    that removal of these rows with N/A values does not affect the model's potential of understanding the synthetic
+    date.
+  initialValue: []
+  tags:
+    - Medium Impact
+  groupTag: Column Type Inference
+na_equivalences:
+  type: skipped # array
+  of: string
+  label: N/A equivalences
+  documentation: |
+    The equivalent representations of N/A in the original data. When generating synthetic data, we will generate N/A
+    values with the N/A equivalent representations in the given real data based on its proportion. In particular,
+    if the Input data has only one N/Arepresentation, we will recover the correct N/A representation,
+    - "Caveat"*: if you have set the * N/A representations" and there is overlap between the two, N/A representations"
+    will take the value because it happens at the IO stage.
+  tags:
+    - Medium Impact
+  groupTag: N/A Handling
+dataArgs.target_columns:
+  type: skipped
+target_columns:
+  options: columns
+  type: select
+  multi: tue
+  label: target columns
+  documentation: |
+    Columns that are the target to be predicted. In the output, if they
+    are combined to the other columns, they are usuaily grouped and placed at the
+    right-most columns in the output of transformation steps unless otherwise stated,
+    Typically, only one column is considered as target. The target is essential if the dataset is 3 typical
+    machine learning dataset.
+  initialValue: []
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+categorical_columns:
+  options: columns
+  type: select
+  multi: true
+  label: categorical columns
+  documentation: |
+    Categorical colurnn names, This list need not be exhaustive because we have an automatic learner.
+    However, if you want to make some numerical- or datetime-looking columns categorical (force them to be categorical),
+    you should select the column names here.
+    Columns should only be selected once and not overlap with mutually exclusive parameters
+    marked as Group A.
+  initialValue: []
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+numerical_columns:
+  options: columns
+  type: select
+  multi: true
+  label: numerical columns
+  documentation: |
+    Numerical column names, This list need not be exhaustive because we have an automatic learner.
+    Both integer and float are considered numerical.
+    Columns should only be selected once and not overlap with mutually exclusive parameters marked as Group A.
+  initialValue: '['
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+datetime_columns:
+  options: columns
+  type: select
+  multi: true
+  label: datetime columns
+  documentation: |
+    Datetime column names. This list need not be exhaustive because we have an automatic learner.
+    A datetime-coiumn should have only one datetime format. Mixture of format in one column is not allowed.
+    Columns should only be selected once and not overlap with mutually exclusive parameters marked ss Group A.
+  initialValue: []
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+timedelta_columns:
+  options: columns
+  type: select
+  multi: true
+  label: Umedeita columns
+  documentation: |
+    Names of timedelta columns. This list need not be comprehensive.
+    Note that itis the user's responsibility to make sure that the values in the
+    columns ere indeed timedeita.
+  initialValue: []
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+mixed_columns:
+  fields: columns # allow keys being columns only, and we should allow users to add/remove keys
+  type: skipped # object
+  multi: true
+  label: mixed-type columns
+  documentation: |
+    Names of columns mixing either numerical, datetime, or timedeita
+    (exactly one of them) with some special strings (each recognized as a category).
+    This Uist need not be comprehensive. Columns mixing more than one type in numericaV/datetimehimedelta
+    with string is possible to be processed as mixed type, but users need to beware
+    of unexpected behaviors. For example, if some numerical value is found in the
+    column but not all, the column will be understood as numerical-categorical mixture.
+    Then if there are some datetime or timedolta data inside the seme column, they
+    will all be treated as categorical.
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+mixed_columns.*: # this format of wildcard is it allowed?
+  type: select
+  label: same-as-key
+  options:
+    - label: numerical
+      value: numerical
+    - label: datetime
+      value: datetime
+    - label: timedeita
+      value: timedelta
+  documentation: |
+    The continuous date type mixed with categorical.
+    - Examplo**: For a mixed column [1,`A",2), one may choose * numerical" as it is a mixture of numerical
+    and categorical. Onty one type is allowed per column.
+  required: true
+  initialValue: numerical
+  groupTag: Column Type Inference
+encoding_columns: # may consider hide it
+  hidden: true
+  fields: columns # allow keys being columns only, and we should allow users to add/remove keys
+  type: skipped # object
+  multi: true
+  label: encoding-given columns
+  documentation: |
+    Names of columns where an encoding for each value is given. This is an advanced column type that requires another
+    external dataset input, when the content of this column actually occurs as a foreign key referencing the primary key
+    from the external dataset. Example use cases include:
+    - High dimensional reatistic data with public general knowledge, for example, city names, university names, zip
+    codes, etc.
+    - Small non-sensitive parent tables, where the synthetic table to be generated is actually a table with parent ina
+    relational database, but the relational schema is simple, and that the parent table does not need to be
+    synthetically gonerated.
+    - Single word text column, may consider using word2vec encoding when the number of different values inside the
+    column is large.
+  tags:
+    - 'Low|mpact'
+  groupTag: Column Type Inference
+  initialValue: {}
+encoding_columns.*: # wildcard at the end
+  hidden: true
+  type: text
+  label: same-as-kay
+  required: true
+  documentation: |
+    | # we don't yet have full setup for linkage, especially the last line.
+    The external dataset description.
+    Your input should be either of the following:
+    - country`: Pre-defined public general knowledge on countries, on columns describing countries and regions.
+    - Any dataset that you have uploaded to our system.
+  groupTag: Column Type Inference
+non_std_columns:
+  options: columns
+  type: select
+  multi: true
+  label: other columns
+  documentation: |
+    Names of columns of other special types. They are typically non-statistics-bearing or high- cardinality
+    non-continuous columns that are not dropped.
+    We will not learn anything about these columns but in the synthetic date generated we will return 6 placeholder with
+    consecutive integers only,
+    Columns should only be selected once and not overlap with mutually exciusive parameters marked as Group A.
+  initialValue: []
+  tags:
+    - High Impact
+  groupTag: Column Type Inference
+default_categorical_kwargs:
+  type: object
+  fields:
+    - max_n_category
+    - other_category
+    - pos_label
+    - 'fillna_value#categorical'
+    - 'fillna_policy#categorical'
+    - strip
+    - case_sensitive
+  label: defautt categorical column arguments
+  tags: '(]'
+  groupTag: Default Arguments by Data Type
+  required: true
+max_n_category:
+  type: number
+  decimal: taise
+  min: 1
+  label: maximum main categories count
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+  initialValue: 200
+  required: true
+other_category:
+  type: skipped
+  initialValue: '<other>'
+default_numerical_kwargs:
+  type: object
+  fields:
+    - fillna_value
+    - fillna_policy
+    - min_val
+    - max_val
+    - is_percentage
+    - separator
+    - digit_group
+    - rounding
+    - smallest_chunk
+  label: default numerical column arguments
+  tags: []
+  groupTag: Default Arguments by Data Type
+  required: true
+default_datetime_kwargs:
+  type: object
+  fields:
+    - fillna_value
+    - fillna_policy
+    - datetime_format
+    - 'min_valiidatetime # So, min_val and max_val are different from date time because they do accept true and false but also different format then integers only.'
+    - 'max_valfdatetime # same as above'
+    - min_significant_unit
+    - 'smallest_chunk#datetime'
+    - dayfirst
+    - yearfirst
+    - utc
+    - exact
+    - unit
+    - origin
+    - cache
+    - main_method
+    - auxiliary_methods
+    - additional_components
+    - modify_by_additional_components
+    - default_binary_component_args
+    - default_multiclass_component_args
+    - default_numerical_component_args
+    - special_component_args
+  label: default datetime column arguments
+  tags: []
+  groupTag: Default Arguments by Data Type
+  required: true
+default_timedelta_kwargs:
+  type: object
+  fields:
+    - fillna_value
+    - fillna_policy
+    - 'min_valifdatetime # separate min and max value definitions for date time'
+    - 'max_vall/datetime # separate min and mex value definition for date time values'
+    - min_significant_unit
+    - 'smallest_chunk#datetime'
+  label: default timedelta column arguments
+  tags: '(]'
+  groupTag: Default Arguments by Data Type
+  required: true
+default_mixed_kwargs:
+  type: object
+  fields:
+    - base_type
+    - value_mapper
+    - base_category
+  label: default mixed column arguments
+  tags: '(]'
+  groupTag: Default Arguments by Data Type
+  required: true
+general:
+  type: skipped
+metrics:
+  type: object
+  label: Metrics Parameters
+  fields:
+    - target_string
+    - multiprocessing
+target_string:
+  type: select
+  label: Target Suing
+  options: columns
+multiprocessing:
+  type: boolean
+  label: Multi Processing
+default_encoding_kwargs:
+  type: object
+  fields:
+    - info_data
+    - info_column_kwargs
+    - strip
+    - case_sensitive
+    - seen_only
+    - fillna_policy
+    - 'tensorize_method#binary'
+    - 'tensorize_method#multiclass'
+    - n_neighbors
+    - algorithm
+    - leaf_size
+    - metric Pp
+    - metric_params
+    - expand
+    - shuffle_columns
+    - raw_info_columns
+    - sep_info_values
+    - use_col_sep
+    - default_binary_component_kwargs
+    - default_multiclass_component_kwargs
+    - default_numerical_component_kwargs
+  label: default encoding column arguments
+  tags: []
+  groupTag: Default Arguments by Data Type
+  required: true
+default_non_std_kwargs:
+  type: object
+  fields:
+    - strip
+    - case_sensitive
+    - fillna_value
+    - fillna_policy
+  label: default non-standard column arguments
+  groupTag: Default Arguments by Data Type
+  required: true
+fillna_value#categorical:
+  type: skipped # text
+  label: filina value
+  documentation: |
+    The value to replace all N/A values with.
+    Hf not provided, we will use an is-N/A indicator (like the effect of applying '.isna()> on the column) as auxiliary
+    binary feature, and use * fillna_policy" to fill the N/A values.
+    You can also provide a policy name as defined in * fillna_policy" to directly fill N/A values by the policy, but
+    using the policies at this parameter will not guarantee the information on whether the data is N/A is maintained
+    fully.
+    ## Example
+    - a new value "<nan>" not in any category to make N/A values a special category, or
+    - "missing" If this is another way of N/A representation in the column and it !s treated identical to other
+    N/As.
+    ## Caveat
+    1. If some value in the column is the same as the value to fill N/A, then N/A will be indistinguishable to these
+    values, and hence information loss might be possible. During sampling of synthetic data, all values equal to this
+    filina_value` will be treated as N/A in the output. This may result in more N/A values than expected.
+    2. Values same as the policy names are reserved for the policies, so you cannot choose these strings as the value to
+    fill N/A values with.
+  initialValue:
+  tags:
+    - Medium Impact
+  groupTag: N/A Handling
+fillna_policy#categorical:
+  type: skipped # select
+  label: fillna policy
+  required: true
+  documentation: |
+    The policy to fitl N/A values, after is-N/A indicator is extracted. This argument will take no effect if
+    fillna_value` is provided.
+    The policies are:
+    - "*speciai**: Special value out of the range, like anew category in categorical value, or a very small value in
+    continuous columns. The value will be automatically determined.
+    - **sample**: Sampled values In the column, which will assign different values to different N/A values.
+  initialValue: sample
+  options:
+    - value: special
+      label: special
+    - value: sample
+      label: sample
+  tags:
+    - Medium Impact
+  groupTag: N/A Handling
+strip:
+  type: skipped # text do not support data type conversion yet
+  label: stripping string
+  tags:
+    - Medium Impact
+  documentation: |
+    The text to strip at two ends of categorical data. For example, when space is provided, Category "A" and " A" or
+    A" are treated as the same category. Note that the stripping will not be recovered in the generated data.
+  groupTag: Column Data Specification
+fillna_value:
+  type: skipped # text
+  label: fillna value
+  documentation: |
+    The value to replace all N/A values with.
+    If not provided, we will use an Is-N/A indicator (like the effect of applying '.isnal)" on the column) as auxiliary
+    binary feature, and use ` fillna_policye to fill the N/A values.
+    You can also provide a policy name as defined In * fillna_policy" to directly fill N/A values by the policy, but
+    using the policies at this parameter will not guarantee the information on whother the data is N/A is maintained
+    fully.
+    ## Example
+    - 0 or -9999, as typical values to fill N/As in numerical, or
+    - "min"/"mean`, etc., to apply policies and fill the N/A values, or
+    - leave it empty, to keep the information of whether the data is N/A as an additional feature.
+    ## Caveat
+    1. If some value in the column is the same as the value to fill N/A, then N/A will be indistinguishable to these
+    values, and hence Information loss might be possible. During sampling of synthetic date, all values equal to this
+    fillna_value` will be treated as N/A in the output. This may result in more N/A valuos than expected.
+    2. Values same as the policy names are reserved for the policies, so you cannot choose these strings as the value to
+    fill N/A values with,
+  initialValue:
+  tags:
+    - Medium Impact
+  groupTag: N/A Handling
+fillna_policy:
+  type: skipped # select
+  label: fillna policy
+  documentation: |
+    The policy to fill N/A values, after is-N/A indicator is extracted. This argument will take no affect if
+    - fillna_value" is provided.
+    The poticies are:
+    - "*mean**; Mean value in the column, applicable for continuous columns only. Boware of potential breaking of
+    rounding by mean (for example, in a column [1, 1, 2, 2, N/A], the mean is 1.5, but the column is actually integer,
+    and this may result in the later teaming see the column after removing N/A values as [1, 1, 2, 2, 1.5], and hence
+    learn it 4s a float column rather than integer column).
+    - **min**: Minimum velue in the column, applicable for continuous columns only.
+    - **special"*: Special value out of the range, like anew category in categorical value, or a very small value in
+    continuous columns. The value will be automatically determined.
+    - "*sample**: Sampled values in the column, which will assign differant values to different N/A values.
+  initialValue: min
+  options:
+    - value: mean
+      label: mean
+    - value: min
+      label: min
+    - value: special
+      label: special
+    - value: sample
+      label: sample
+  tags:
+    - Medium Impact
+  groupTag: N/A Handling
+  required: true
+default_categorical_kwargs.pos_label:
+  type: skipped
+  initialValue:
+  label: pos label
+pos_label:
+  type: text
+  label: pos label
+  documentation: |
+    The positive label value In this categorical column if it is binary. If not provided, the column is treated as
+    multiclass, even if it contains only 2 categories.
+    - *Tip:** Do not edit this parameter for 3A if there are multi-class categorical values in the dataset or your
+    positive label is not the same throughout the full table.
+  initialValue:
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+column_kwargs.*.tensorize_method#binary:
+  type: extension
+  extendFrom: 'tensorize_method#binary'
+  conditions:
+    - field: '/pos_label'
+      is: null # ! does this work?
+special_column_kwargs.*.tensorize_method#binary:
+  type: extension
+  extendFrom: 'column_kwargs.*.tensorize_method#binary'
+column_kwargs.*.tensorize_method#multiclass:
+  type: extension
+  extendFrom: 'tensorize_method#multiclass'
+  conditions:
+    - field: '/pos_label'
+      isNot: null # ! does this work?
+special_column_kwargs.*.tensorize_method#multiclass:
+  type: extension
+  extendFrom: 'column_kwargs.*.tensorize_method#multiclass'
+force_categories:
+  type: skipped # array
+  of: text
+  initialValue: []
+  label: force categories
+  documentation: |
+    The categories of this column. We will automatically detect all categories in the table, but if one wants to add
+    other unknown categories, this is the field to add.
+  tags:
+    - Low Impact
+  groupTag: Column Data Specification
+case_sensitive:
+  type: skipped # boolean
+  label: case sensitive
+  documentation: |
+    Whether this column's values are case-sensitive. If not Case-sensitive, we will do case- folding to lower case before
+    analysis, end the synthetic data generated will all be lower-cased.
+  initialValue: true
+  required: true
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+is_percentage:
+  type: skipped # boolean
+  presentation: checkbox
+  label: is percentage
+  documentation: |
+    Whether the data is percentage data. If yes, the input (and output)
+    data format will be numbers with "%" mark, such as 20%, 32.8%.
+  initialValue: false
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+separator:
+  type: skipped # text
+  label: separator
+  documentation: |
+    The grouping separator in numbers with large number of digits. If
+    not provided, no separator is used. Typical separator is "=, which represent
+    large values in the format like 123,456,789.
+  initialValue:
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+digit_group:
+  type: skipped # number
+  decimal: false
+  documentation: |
+    The number of digits per group, when separator is used. The most
+    common convention is 3, to represent numbers in 123,459,789. Occasionally other
+    values are allowed, such as 4, to represent numbers in 1,2345,6789.
+  initialValue: 3
+  min: 1 # added minimum value as 1 because below 1 it is giving error
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+min_val#datetime:
+  type: text
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - "*true**: clip to the minimum value in the real data;
+    - "*false**: no range enforcement;
+    - actual value
+  parseAsBooleanIfPossible: true
+  required: true
+  initialValue: false
+max_val#datetime:
+  type: text
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**; clip to the maximum value in the real data;
+    - **faise"*: no range enforcement;
+    - actual value
+  parseAsBooleanIfPossible: true
+  required: true
+  initialValue: false
+min_val:
+  type: text # boolean or (numerica/datetime[str)/timedelta[str])
+  label: minimum value
+  documentation: |
+    The minimum value for the data typo or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - High Impact
+  initialValue: false
+  required: true
+  pattern: '"trueS|"false$)*-2((02\[1-9}{1}{0-9]*)(\.[0-9]+)2)$'
+  patternErrorMessage: Can be either true or # alse or any positive or negative number
+  parseAsBooleanIfPossible: true
+max_val:
+  type: text # boolean or (numerical/datetimestr]/timedelta[str])
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **truc**: clip to the maximum value in the real data;
+    - **false"*: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - High Impact
+  initialValue: false
+  required: true
+  pattern: '"true$|*false$|*~2((02\{ 1-9} 1}[0-9}")(\.[0-9}+)2)$'
+  patternErrorMessage: Can be either true or # alse or any positive or negative number
+  parseAsBooleanIfPossible: true
+rounding:
+  type: skipped # number
+  decimal: false
+  label: maximum precision digits
+  documentation: |
+    Numbor of digits to round to. It can be regarded as the second argument to " round` function in Python.
+    if not provided, no rounding is applied.
+    itt Example
+    - "rounding" =2 means rounding values to 2-digit precision.
+    - " rounding` =-2 means rounding values to hundreds.
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+  min: -100
+  max: 100
+smallest_chunk:
+  type: skipped # number
+  decimal: false
+  label: smatiest chunk size
+  required: true
+  min: 1
+  documentation: |
+    The smallest rounding unit (if * rounding" is not ` None` ).
+    ft Example
+    if * rounding" =2 with ` unit` =5, then the values should be like 0.25, 1.40, -3.55 but
+    not 2.21, -4.19.
+  initialValue: 1
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+datetime_format: # null != empty string
+  type: text
+  label: datetime # ormat
+  documentation: |
+    The datetime format string (under Python implemantation). If not provided, only datetime format understood in
+    pd.to_datetime" are allowed. We can learn common format and return back the format, but if the input data is of
+    Some rare datetime format, and the format of reconstructed data will be using 36Y~%m-96d 96H:96M:96S, 961"
+    We highly suggest you to specify the format, especially if all dates in your dataset has day values <=12 and both
+    month and day are represent in numbers, which makes it hard to distinguish month and day.
+  initialValue: '"96Y-9om-96d"'
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+min_significant_unit:
+  type: skipped # select
+  options:
+    - label: year
+      value: year
+    - label: month
+      value: month
+    - label: day
+      value: day
+    - label: hour
+      value: hour
+    - label: minute
+      value: minute
+    - label: second
+      value: second
+    - label: microsecond
+      value: microsecond
+  initialValue: microsecond
+  label: smallest datetime unit
+  documentation: |
+    Tho smallest datetime unit in the data. For example, for pure dates data, "day" may be chosen.
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+  required: true
+smallest_chunk#datetime:
+  type: skipped # number
+  decimal: false
+  label: smallest chunk
+  documentation: |
+    The smallest chunk in the unit. Although 1 is always valid, to make values more faithful to the original format,
+    itis recommended to use the largest chunk as possible.
+    itt Example
+    For time values (date omitted) 12:30:00 and 20:00:00, with minute as unit, the smallest chunk can be 30 (minutes).
+  initialValue: 1
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+  min: 1
+dayfirst:
+  type: boolean
+  label: day # irst
+  initialValue: true
+  required: true
+  documentation: |
+    Inherited from [`pd.to_datetime`](https://pandas.pydata.org/docs/reference/api/pandas.to_datetime.html) when
+    understanding datetime data.
+    Specify a date parse order. If true, parses dates with the day first, e.g. "10/11/12" is parsed @s 2012-11-10.
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+yearfirst:
+  type: boolean
+  label: year # irst
+  initialValue: false
+  required: true
+  documentation: |
+    Inherited from [ pd.to_datetime i(https://pandas. pydate.org/docs/reference/api/pandes.to_datetime.html) when
+    understanding datetime data.
+    Specify a date parse order. If true parses dates with the year first, e.g. "10/11/12" is parsed 4S 2010-1 1-12.
+    If both ` day first` and ` year first" are true, * year first` is preceded (same as ` dateutil' }.
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+utc:
+  type: skipped # we currently don't support timezone
+  initialValue: false
+exact:
+  type: skipped # boolean
+  label: exact # ormat matching
+  initialValue: true
+  required: true
+  documentation: |
+    Inherited from [ pd.to_datetime`e \(https://pandas. pydata.org/docs/reference/apl/pandas.to_datetime.html) when
+    understanding datetime date.
+    Control how format is used, If true, require an exact format match. Else, allow the format to match anywhere in the
+    target string.
+  tags:
+    - Low Impact
+  groupTag: Column Data Specification
+unit:
+  type: skipped # we do not support null options for now
+  label: time unit
+  options:
+    - label: day
+      value: D
+    - label: s
+      value: second
+    - label: millisecond
+      value: ms
+    - label: microsecond
+      value: us
+    - label: nanosecond
+      value: ns
+    - label: null
+      value: # null value is allowed
+  initialValue: ns
+  required: faiso
+  documentation: |
+    Inherited from [| pd.to_datetime i(https://pandas. pydata.org/docs/reference/api/pandas.to_datetime.html) when
+    understanding datetime data.
+    The unit of the values, when the values are integer or float numbers. This will be based off the origin, Example,
+    with * time unite'microsecond`* and * time origin="unix'`, this would calculate the number of milliseconds to the unix
+    epoch start.
+    This is relevant only when data is read from file, rather than the actual internal processing,
+  tags:
+    - Low Impact
+  groupTag: Column Data Specification
+origin:
+  type: skipped # itext too complex options for now
+  label: time origin
+  initialValue: unix
+  required: true
+  documentation: |
+    Inherited from [ pd.to_datetime \(https://pandas.pydate.org/docs/reference/api/pandas.to_datetime.html) when
+    understanding datetime data.
+    Define the reference date. The numeric values would be parsed as numbor of units (defined by unit) since this
+    reference date. Valid data are:
+    - **unix** or **POSIX"*: origin is set to 1970-01-01.
+    - **julian`*; the time unit` must be ` day`, and origin is set to beginning of Julian Calendar, Jullan day number
+    O is assigned to the day starting at noon on January 1, 4713 BC.
+    - If a date string is passed, its set to the origin.
+    - If @ float or integer Is passed, it represents the difference (in units determined by the "time unit" argument)
+    relative to 1970-01-01.
+  tags:
+    - Low Impact
+  groupTag: Column Data Specification
+cache:
+  type: skipped # boolean
+  label: cache date # ormat
+  initialValue: true
+  required: true
+  documentation: |
+    inherited from [ pd.to_datetime" \(https://pandas.pydate.org/docs/reference/api/pandas.to_datetime.htm|) when
+    understanding datetime data.
+    If True, use a cache of unique, converted dates to apply the datetime conversion. May produce significant speed-up
+    when parsing duplicate date strings, especially ones with timezone offsets. The cache is only used when there are at
+    least 50 values. The presence of out-of-bounds values will tender the cache unusable and may slow down parsing.
+  tags:
+    - Low Impact
+  groupTag: Column Data Specification
+main_method:
+  type: skipped # select. Skipped it for now because | was facing errors It with combination with auxilary_method and modify_be_additional_components
+  initialValue: numerical
+  required: true
+  documentation: |
+    The main method used to standardize the datetime data.
+    This method is used as the basis of inverse the standardization step when there is conflict.
+    Methods include:
+    - **as numoricai*: Converting the entire date-time value as a numerical value based on the units and chunks
+    calculated in difference to the minimum value in the column.
+    For example, for column [2020-01-01 s2020-01-03,2020-01-05] with * smallest datetime unite being day and
+    smallest chunk` being 2, the values standardized ere [0,1,2}.
+    - **date-time**: Separating the date and time component, each as a datetime raw data standardized by
+    - *as numerical"* above.
+    - "*unit components"*; Separating year, month, day, hour, minute, second, and microsecond components, each as a
+    rounded and ranged numerical column.
+    - "weekly factorizotion**: Separating year, week of year, day of week, hour, minute, second, and microsecond
+    components, each as a rounded and ranged numerical column.
+    - **yearly factorization`*: Separating year, day of year, hour, minute, second, and microsecond components,
+    each as a rounded and ranged numerical column,
+    - **unit components and time**: Separating year, month, day, time components, where time is representod as a
+    datetime raw deta standardized by ` as numerical` and year, month, and day are rounded and ranged numerical
+    columns.
+    - "weekly factorization and time**: Separating year, week of year, day of week, time components, where time is
+    represented as e datetime raw data standardized by * as numerical` only, and year, week of year, and day of week
+    are rounded and ranged numerical columns,
+    - **yearly factorization and time**: Separating year, day of year, time components, where time is represented as a
+    datetime raw date standardized by * as numerical` only, and year and day of year are rounded and ranged numerical
+    columns.
+  options:
+    - label: as numerical
+      value: numerical
+    - label: date-time
+      value: date_time
+    - label: unit components
+      value: components
+    - label: weekly # actorization
+      value: week_components
+    - label: yearly # actorization
+      value: year_ components
+    - label: unit components and time
+      value: components_time
+    - label: weekly # actorization and time
+      value: week_components_time
+    - label: yearly # actorization and time
+      value: year_components_time
+  tags:
+    - High Impact
+  groupTag: Data Encoding Arguments
+auxiliary_methods:
+  type: skipped # select
+  multi: true
+  label: auxiliary datetime decomposition methods
+  initialValue: [] # null is equal to empty
+  documentation: |
+    Auxiliary methods that are also applied for standardization but they will not affect the inverse standerdization
+    step, Value methods are the same as * main datetime decomposition method`, but should not overlap.
+  options:
+    - label: as numerical
+      value: numerical
+    - label: date-time
+      value: date_time
+    - label: unit components
+      value: components
+    - label: weekly # actorization
+      value: week_components
+    - label: yearly # actorization
+      value: year_components
+    - label: unit components and time
+      value: components_time
+    - label: weekly # ectorization and time
+      value: week_components_time
+    - label: yearly # actorization and time
+      value: year_components_time
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+additional_components:
+  label: additional datetime components
+  documentation: |
+    Additional datetime components that are unmentioned in datetime decomposition methods, main or auxiliary, to include
+    in the standardized data.
+  type: skipped # select
+  multi: true
+  options:
+    - label: date
+      value: date
+    - label: time
+      value: time
+    - label: year
+      value: year
+    - label: month
+      value: month
+    - label: day
+      value: day
+    - label: hour
+      value: hour
+    - label: minute
+      value: minute
+    - label: second
+      value: second
+    - label: microsecond
+      value: microsecond
+    - label: nanosecond
+      value: nanosecond
+    - label: day index of week
+      value: dayofweek
+    - label: day index of year
+      value: dayofyear
+    - label: days in the current month
+      value: daysinmonth
+    - label: quarter index
+      value: quarter
+    - label: is month start
+      value: is_month_start
+    - label: Is month end
+      value: is_month_end
+    - label: is quarter start
+      value: is_quarter_start
+    - label: is year start
+      value: is_year_start
+    - label: is year end
+      value: is_year_end
+    - label: is leap year
+      value: is_leap_year
+    - label: month name
+      value: month_name
+    - label: dey name in week
+      value: day_name
+    - label: AM vs. PM
+      value: am_pm
+    - label: week of year
+      value: weekofyear
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+modify_by_additional_components:
+  label: modify by additional components
+  type: skipped # boolean
+  initialValue: true
+  required: true
+  documentation: |
+    Whether to modify the inversely standardized data by some special components.
+    If set True, after inversely standardizing some standardized data by ` main_method`,
+    we will try to find a reasonably near date-time value that satisfy the requirements by the special
+    components if the components occur in the standardized columns.
+    These special components are quarter, day of week (numerical) / day name (categorical),
+    month name (categorical), and AM/PM.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+default_binary_component_args:
+  extendFrom: default_binary_component_kwargs
+  type: skipped
+default_multiclass_component_args:
+  extendFrom: default_multiclass_component_kwargs
+  type: skipped
+default_numerical_component_args:
+  extendFrom: default_numerical_component_kwargs
+  type: extension
+special_component_args:
+  type: skipped # object # too complex to be tested for now
+  label: special datetime component arguments
+  documentation: |
+    Special arguments to the datetime components to override the default above in
+    defeutt binary/multiciass/numerical component arguments for datetime`.
+  fields:
+    - date
+    - time
+    - year
+    - month
+    - day
+    - hour
+    - minute
+    - second
+    - microsecond
+    - nanosecond
+    - dayofweek
+    - dayofyear
+    - daysinmonth
+    - quarter
+    - is_month_start
+    - is_month_end
+    - is_quarter_start
+    - is_quarter_end
+    - is_year_start
+    - is_year_end
+    - is_leap_year
+    - month_name
+    - day_name
+    - am_pm
+    - weekofyear
+special_component_args.*.raw_dtype:
+  type: skipped
+special_component_args.date: # it has some fixed setup below
+  label: date
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The date component calculated by * as numerical`.
+  type: skipped # object
+special_component_args.date.raw_dtype:
+  type: skipped
+  initialValue: datetime
+special_component_args.date.min_significant_unit:
+  type: skipped # select
+  options:
+    - label: year
+      value: year
+    - label: month
+      value: month
+    - label: day
+      value: day
+  initialValue: microsecond
+  label: smallest datetime unit
+  documentation: |
+    The smallest datetime unit in the data. For example, for pure dates data, "day" may be chosen.
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+  required: true
+special_component_args.date.dayfirst:
+  type: skipped
+  initialValue: false
+special_component_args.date.yearfirst:
+  type: skipped
+  initialValue: true
+special_component_args.date.exact:
+  type: skipped
+  initialValue: true
+special_component_args.date.unit:
+  type: skipped
+  initialValue:
+special_component_args.date.origin:
+  type: skipped
+  initialValue: unix
+special_component_args.date.cache:
+  type: skipped
+  initialValue: true
+special_component_args.date.fillna_value:
+  type: skipped
+  initialValue:
+special_component_args.date.fillna_policy:
+  type: skipped
+  initialValue: min
+special_component_args.date.main_method:
+  type: skipped
+  initialValue: numerical
+special_component_args.date.auxiliary_methods:
+  type: skipped
+  initialValue: []
+special_component_args.date.additional_components:
+  type: skipped
+  initialValue: []
+special_component_args.date.modify_by_additional_components:
+  type: skipped
+  initialValue: false
+special_component_args.date.default_binary_component_args:
+  type: skipped
+  initialValue:
+special_component_args.date.default_multiclass_component_args:
+  type: skipped
+  initialValue:
+special_component_args.date.default_numerical_component_args:
+  type: skipped
+  initialValue:
+special_component_args.time: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The time component calculated by `as numerical`.
+  label: time
+special_component_args.time.raw_dtype:
+  type: skipped
+  initialValue: datetime
+special_component_args.time.min_significant_unit:
+  type: skipped # select
+  options:
+    - label: hour
+      value: hour
+    - label: minute
+      value: minute
+    - label: second
+      value: second
+    - label: microsecond
+      value: microsecond
+  initialValue: microsecond
+  label: smallest datetime unit
+  documentation: |
+    The smatlest datetime unit in the data. For example, for pure dates data, "day" may be chosen.
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+  required: true
+special_component_args.time.dayfirst:
+  type: skipped
+  initialValue: false
+special_component_args.time.yearfirst:
+  type: skipped
+  initialValue: true
+special_component_args.time.exact:
+  type: skipped
+  initialValue: true
+special_component_args.time.unit:
+  type: skipped
+  initialValue:
+special_component_args.time.origin:
+  type: skipped
+  initialValue: unix
+special_component_args.time.cache:
+  type: skipped
+  initialValue: true
+special_component_args.time.fillna_value:
+  type: skipped
+  initialValue:
+special_component_args.time.fillna_policy:
+  type: skipped
+  initialValue: min
+special_component_args.time.main_method:
+  type: skipped
+  initialValue: numerical
+special_component_args.time.auxiliary_methods:
+  type: skipped
+  initialValue: []
+special_component_args.time.additional_components:
+  type: skipped
+  initialValue: []
+special_component_args.time.modify_by_additional_components:
+  type: skipped
+  initialValue: false
+special_component_args.time.default_binary_component_args:
+  type: skipped
+  initialValue:
+special_component_args.time.default_multiclass_component_args:
+  type: skipped
+  initialValue:
+special_component_args.time.default_numerical_component_args:
+  type: skipped
+  initialValue:
+special_component_args.year: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The year componont.
+  label: year
+special_component_args.year.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.year.rounding:
+  type: skipped # number
+  decimal: false
+  label: maximum precision digits
+  documentation: |
+    Number of digits to round to, It can be regarded as the second argument to "round" function in Python.
+    If not provided, no rounding is applied.
+    - "Examplo**: c rounding` -2 means rounding values to 2-digit precision.
+  min: 0
+  tags:
+    - Low Impact
+  max: 3
+  groupTag: Data Encoding Arguments
+  initialValue: 0
+special_component_args.year.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 1677
+  min: 1677
+  max: 2262 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**: clip to the maximum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 2262
+  min: 1677
+  max: 2262 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.month: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The month component.
+  label: month
+special_component_args.month.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.month.rounding:
+  type: skipped
+  initialValue: 0
+special_component_args.month.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - "*faise**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 4
+  min: 1
+  max: 12 # range when the Input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.month.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**: clip to the maximum value In the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 12
+  min: 1
+  max: 12 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.day: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The day component.
+  label: day
+special_component_args.day.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.day.rounding:
+  type: skipped
+  initialValue: 0
+special_component_args.day.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 1
+  min: 1
+  max: 31 # range when the input ls number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.day.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**; clip to the maximum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 31
+  min: 1
+  max: 31 # range when the input Is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.hour: # it has some fixed setup betow
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The hour component.
+  label: hour
+special_component_args.hour.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.hour.rounding:
+  type: skipped
+  initialValue: 0
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column, It can be
+    - **true"*; clip to the minimum value in the real data;
+    - **false**; no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 0
+  min: 0
+  max: 23 # range when the Input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.hour.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**; clip to the maximum value in the real data;
+    - "*faise**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 23
+  min: 0
+  max: 23 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.minute: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The minute component.
+  label: minute
+special_component_args.minute.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.minute.rounding:
+  type: skipped # number
+  decimal: false
+  label: maximum precision digits
+  documentation: |
+    Number of digits to round to, It can be regarded as the second argument to "round" function in Python.
+    if not provided, no rounding is applied.
+    - *Example": ` rounding` c2 means rounding values to 2-digit precision.
+  min: 0
+  tags:
+    - Low Impact
+  max: 2
+  groupTag: Data Encoding Arguments
+  initialValue: 0
+special_component_args.minute.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 0
+  min: 0
+  max: 59 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.minute.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true"*: clip to the maximum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 59
+  min: 0
+  max: 59 # range when the input |s number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.second: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The second component.
+  label: second
+special_component_args.second.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.second.rounding:
+  type: skipped # number
+  decimal: false
+  label: maximum precision digits
+  documentation: |
+    Number of digits to round to, It can be regarded as the second argument to round` function in Python.
+    If not provided, no rounding is applied.
+    Example**: ` rounding` =2 means rounding values to 2-digit precision.
+  min: 0
+  tags:
+    - Low Impact
+  max: 2
+  groupTag: Data Encoding Arguments
+  initialValue: 0
+special_component_args.second.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - **false"": no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 0
+  min: 0
+  max: 59 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.second.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or colurnn. It can be
+    - **true**; clip to the maximum value in the real data;
+    - **faise**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 59
+  min: 0
+  max: 59 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.microsecond: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The microsecond component.
+  label: microsecond
+special_component_args.*.microsecond.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.microsecond.rounding:
+  type: skipped # number
+  decimal: false
+  label: maximum precision digits
+  documentation: |
+    Number of digits to round to. It can be regarded as the second argument to round` function in Python.
+    If not provided, no rounding is applied.
+    - "Example**: * rounding` =2 means rounding values to 2-digit precision.
+  min: 0
+  tags:
+    - Low Impact
+  max: 6
+  initialValue: 0
+  groupTag: Data Encoding Arguments
+special_component_args.microsecond.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column, It can be
+    - **true"*: clip to the minimum value in the real data;
+    - **false"*: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 0
+  min: 0
+  max: 999999 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.microsecond.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum velue for the data type or column. It can be
+    - *"true"": clip to the maximum value in the real data;
+    - "*faise""*: no range enforcement;
+    - actual value, such as 0 for negative numerical value,
+  tags:
+    - Low Impact
+  initialValue: 999998
+  min: 0
+  max: 999999 # range when the inputis number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.nanosecond: # ithas some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The nanosecond component.
+  label: nanosecond
+special_component_args.nanosecond.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.nanosecond.rounding:
+  type: skipped # number
+  decimal: false
+  label: maximum precision digits
+  documentation: |
+    Number of digits to round to. It can be regarded as the second argument to round` function in Python.
+    if not provided, no rounding is applied.
+    Example": ` rounding` =2 means rounding values to 2-digit precision.
+  min: 0
+  tags:
+    - Low Impact
+  max: 3
+  groupTag: Data Encoding Arguments
+  initialValue: 0
+special_component_args.nanosecond.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - **falso**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 0
+  min: 0
+  max: 999 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.nanosecond.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true": clip to the maximum value in the real data;
+    - "*faise**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 999
+  min: 0
+  max: 999 # range when the inputis number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.dayofweek: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The day index of week component.
+  label: day index of week
+special_component_args.dayofweek.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.dayofweek.rounding:
+  type: skipped
+  initialValue: 0
+special_component_args.dayofweek.min_val:
+  type: skipped # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can ba
+    - "*true**: clip to the minimum value in the real data;
+    - *faise**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 0
+  min: 0
+  max: 6 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.dayofweek.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - "*true**: clip to the maximum value in the real data;
+    - **faise"*: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 6
+  min: 0
+  max: 6 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.dayofyear: # f it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The day index of year component.
+  label: day index of year
+special_component_args.dayofyear.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.dayofyear.rounding:
+  type: skipped # number
+  decimal: false
+  label: maximum precision digits
+  documentation: |
+    Number of digits to round to. It can be regarded as the second argumentto round" function in Python.
+    if not provided, no rounding Is applied.
+    - Exemple**: ` rounding` =2 means rounding values to 2-digit precision.
+  min: 0
+  tags:
+    - Low Impact
+  max: 2
+  groupTag: Data Encoding Arguments
+  initialValue: 0
+special_component_args.dayofyear.min_val:
+  type: skipped # boolesn or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**: clip to the minimum value in the real data;
+    - "*false**: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 1
+  min: 1
+  max: 366 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.dayofyear.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true"*: clip to the maximum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 366
+  min:
+  max: 366 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.daysinmonth: # it hes some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The number of days in the current month.
+  label: number of days in month
+special_component_args.daysinmonth.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.daysinmonth.rounding:
+  type: skipped
+  initialValue: 0
+special_component_args.daysinmonth.min_val:
+  type: skipped # bootean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column, it can be
+    - **true**: clip to the minimum value in the real data;
+    - *false""": no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 28
+  min: 28
+  max: 31 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.daysinmonth.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**: clip to the maximum value in the real data;
+    - *"faise`*: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 31
+  min: 28
+  max: 31 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.quarter: # it has some fixed setup below
+  type: skipped
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The quarter component.
+  label: quarter
+special_component_args.quarter.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.quarter.rounding:
+  type: skipped
+  initialValue: 0
+special_component_args.quarter.min_val:
+  type: skipped # boolean or numerical
+  label: minimum vaiue
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true**; clip to the minimum yalue in the real data;
+    - "*false**: no range enforcement;
+    - actual value, such es 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 1
+  min: 1
+  max: 4 # range when the inputis number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.quarter.max_val:
+  type: skipped # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**: clip to the maximum value in the real data;
+    - **false**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 4
+  min: 1
+  max: 4 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.is_month_start: # it has some fixed setup below
+  type: skipped # object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The Is month start checker component.
+  label: is month start
+special_component_args.is_month_start.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.is_month_start.pos_label:
+  type: skipped
+  initialValue: true
+special_component_args.is_month_start.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.is_month_start.strip:
+  type: skipped
+special_component_args.is_month_end: # it has some fixed setup below
+  type: object
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The is month end checker component.
+  label: is month end
+special_component_args.is_month_end.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.is_month_end.pos_label:
+  type: skipped
+  initialValue: true
+special_component_args.is_month_end.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.is_month_end.strip:
+  type: skipped
+special_component_args.is_quarter_start: # it has some fixad setup below
+  type: object
+  label: is quarter start
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The is quarter start checker component.
+special_component_args.is_quarter_start.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.is_quarter_start.pos_label:
+  type: skipped
+  initialValue: true
+special_component_args.is_quarter_start.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.is_quarter_start.strip:
+  type: skipped
+special_component_args.is_quarter_end: # it has some fixed setup below
+  type: object
+  label: is quarter end
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The Is quarter end checker component.
+special_component_args.is_quarter_end.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.is_quarter_end.pos_label:
+  type: skipped
+  initialValue: true
+special_component_args.is_quarter_end.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.is_quarter_end.strip:
+  type: skipped
+special_component_args.is_year_start: # ithas some fixed setup below
+  type: object
+  label: is year start
+  fields: unknown
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The is year start checker component.
+special_component_args.is_year_start.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.is_year_start.pos_label:
+  type: skipped
+  initialValue: true
+special_component_args.is_year_start.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.is_year_start.strip:
+  type: skipped
+special_component_args.is_year_end: # it has some fixed setup below
+  type: object
+  fields: unknown
+  label: is year end
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The is year end checker component.
+special_component_args.is_year_end.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.is_year_end.pos_label:
+  type: skipped
+  initialValue: true
+special_component_args.is_year_end.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.is_year_end.strip:
+  type: skipped
+special_component_args.is_leap_year: # it has some fixed setup below
+  type: object
+  fields: unknown
+  label: is leap year
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The is leap year checker component.
+special_component_args.is_leap_year.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.is_leap_year.pos_label:
+  type: skipped
+  initialValue: true
+special_component_args.is_leap_year.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.is_leap_year.strip:
+  type: skipped
+special_component_args.month_name: # it has some fixed setup below
+  type: object
+  label: month name
+  fields: unknown
+  tags:
+    - Low Impect
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The month name component.
+special_component_args.month_name.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.month_name.pos_label:
+  type: skipped
+special_component_args.month_name.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.month_name.strip:
+  type: skipped
+special_component_args.day_name: # it has some fixed setup below
+  type: object
+  fields: unknown
+  label: day name in week
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The day name in week component,
+special_component_args.day_name.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.day_name.pos_label:
+  type: skipped
+special_component_args.day_name.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.day_name.strip:
+  type: skipped
+special_component_args.am_pm: # it has some fixed setup below
+  type: object
+  fields: unknown
+  label: AM vs PM
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The AM vs, PM checker component.
+special_component_args.am_pm.raw_dtype:
+  type: skipped
+  initialValue: categorical
+special_component_args.am_pm.pos_label:
+  type: skipped
+  initialValue: AM
+special_component_args.am_pm.case_sensitive:
+  type: skipped
+  initialValue: false
+special_component_args.am_pm.strip:
+  type: skipped
+special_component_args.weekofyear: # it has some fixed setup below
+  type: object
+  fields: unknown
+  label: week index of year
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  documentation: |
+    The week index of year component.
+special_component_args.weekofyear.raw_dtype:
+  type: skipped
+  initialValue: numerical
+special_component_args.weekofyear.rounding:
+  type: skipped
+  initialValue: 0
+special_component_args.weekofyear.min_val:
+  type: text # boolean or numerical
+  label: minimum value
+  documentation: |
+    The minimum value for the data type or column. It can be
+    - **true*": clip to the minimum value in the real data;
+    - "*faise*`: no range enforcement;
+    - actual value, such as 0 for positive numerical value.
+  tags:
+    - Low Impact
+  initialValue: 1
+  min: 1
+  max: 53 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+special_component_args.weekofyear.max_val:
+  type: text # boolean or numerical
+  label: maximum value
+  documentation: |
+    The maximum value for the data type or column. It can be
+    - **true**: clip to the maximum value in the real data;
+    - "*false**: no range enforcement;
+    - actual value, such as 0 for negative numerical value.
+  tags:
+    - Low Impact
+  initialValue: 53
+  min: 1
+  max: 53 # range when the input is number
+  required: true
+  groupTag: Data Encoding Arguments
+default_mixed_kwargs.base_type:
+  type: select
+  options:
+    - label: numerical
+      value: numerical
+    - label: datetime
+      value: datetime
+    - label: timedeita
+      value: timedelta
+  label: continuous type
+  documentation: |
+    The data type mixed with categorical in this mixed column.
+    Values not comprehensible as the base type will be considered as the categorical component of the
+    mixed-type.
+  required: true
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+  initialValue: numerical
+base_type: # wildcard at partial of key
+  type: swappable-fields
+  readOnly: true
+  schemas:
+    numerical:
+      - fillna_value
+      - fillna_policy
+      - min_val
+      - max_val
+      - is_percentage
+      - separator
+      - digit_group
+      - rounding
+      - smallest_chunk
+    datetime:
+      - fillna_value
+      - fillna_policy
+      - datetime_format
+      - min_val
+      - max_val
+      - min_significant_unit
+      - 'smallest_chunk#datetime'
+      - dayfirst
+      - yearfirst
+      - utc
+      - exact
+      - unit
+      - origin
+      - cache
+      - main_method
+      - auxiliary_methods
+      - additional_components
+      - modify_by_additional_components
+      - default_binary_component_args
+      - default_multiclass_component_args
+      - default_numerical_component_args
+      - special_component_args
+    timedelta:
+      - fillna_value
+      - fillna_policy
+      - min_val
+      - max_val
+      - min_significant_unit
+      - 'smallest_chunk#datetime'
+  label: continuous type
+  documentation: |
+    The data type mixed with categorical in this mixed column.
+    Values not comprehensible as the base type will be considered as the categorical component of the
+    mixed-type.
+  required: true
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+  initialValue: numerical
+value_mapper:
+  type: skipped # object
+  editable: true # the user is allowed to arbitrarily change this dict keys
+  label: mixed value mapper
+  documentation: |
+    The values of categorical values mapped to values in the ` continuous type`.
+    For categorical values in the mixed column not occurring in the mapper, base values of the data type, like 0 for
+    numbers, are used.
+  tags:
+    - Medium Impact
+  groupTag: Column Data Specification
+base_category:
+  type: skipped # text
+  label: continuous representation
+  documentation: |
+    The special category indicating the value being of the * continuous type" in the categorical componont of mixed
+    column.
+  tags:
+    - Low Impact
+  groupTag: Column Data Specification
+  initialValue: base
+info_data:
+  type: select
+  label: external information dats
+  options:
+    - label: country
+      value: country
+    - label: dataset # the user uploaded datasets, this is advanced feature, not so essential
+      value: dataset
+  documentation: |
+    Either a pre-defined encoder like country, or the file path of the table of the information data.
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+  required: true
+default_encoding_kwargs.info_data:
+  type: skipped
+info_column_kwargs:
+  extendFrom: special_column_kwargs
+  type: extension
+  required: true
+default_encoding_kwargs.info_column_kwargs:
+  type: skipped
+seen_only:
+  type: skipped # boolean
+  initialValue: true
+  required: true
+  label: seen only
+  documentation: |
+    Whether to restrict the inverse transformation of finding nearest neighbors in the values that are seen
+    in the fitting data only, in the case that the c external information data` table contains some values that this
+    column does not have.
+  tags:
+    - Low Impact
+  groupTag: Column Data Specification
+n_neighbors:
+  type: skipped # number
+  initialValue: 5
+  decimal: false
+  min: 1
+  label: N neighbors
+  documentation: |
+    Inherited from [`sklearn.NearestNeighbors`](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html) learn, org/stable/modules/generated/sklearn.neighbors. NearestNeighbors. html).
+    Number of neighbors to use by default for kneighbors queries. We will generate data by finding neighbors in the
+    extemal information table.
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+  required: true
+algorithm:
+  type: skipped # select
+  required: true
+  options:
+    - label: auto
+      value: auto
+    - label: ball tree
+      value: ball_tree
+    - label: kd tree
+      value: kd_tree
+    - label: brute-force
+      value: brute
+  label: nearest neighbor algorithm
+  documentation: |
+    Inherited from [`sklearn.NearestNeighbors`](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html) leam.org/stable/modules/generated/sklearn.ncighbors, NearestNelghbors.html).
+    Algorithm used to compute the nearest neighbors:
+    - **bail trae**: will use [BallTree]{https://scikit- ree);
+    - **kd tree"": will use (KDTree}(https://scikit- e);
+    - **brute**; will use a brute-force search;
+    - "*auto** will attempt to decide the most appropriate algorithm based on the values passed to fit method.
+    Note: fitting on sparse input will override the setting of this perameter, using brute force.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+leaf_size:
+  type: skipped # number
+  decimal: false
+  min: 1
+  required: true
+  initialValue: 30
+  label: leaf size of search
+  documentation: |
+    Inherited from [`sklearn.NearestNeighbors`](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html)
+    Leaf size passed to BallTree or KDTree. This can affect the speed of the construction and query, 8s well as the
+    memory required to store the tree. The optimal value depends on the nature of the problern.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+metric:
+  type: skipped # select
+  required: true
+  options:
+    - label: minkowski
+      value: minkowski
+    - label: precomputed
+      value: precomputed
+    - label: braycurtis
+      value: braycurtis
+    - label: canberra
+      value: canberra
+    - label: chebyshev
+      value: chebyshev
+    - label: cityblock
+      value: cityblock
+    - label: correlation
+      value: correlation
+    - label: cosine
+      value: cosine
+    - label: euclidean
+      value: euclidean
+    - label: jensenshannon
+      value: jensenshannon
+    - label: sqeuclidean
+      value: sqeuclidean
+    - label: haversine
+      value: haversine
+    - label: 11
+      value: '(1'
+    - label: 12
+      value: '(2'
+    - label: manhattan
+      value: manhattan
+    - label: nan_euclidean
+      value: nan_euclidean
+  label: metric # or distance
+  documentation: |
+    Inherited from [`sklearn.NearestNeighbors`](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html)
+    Metric to use for distance computation. Defauit is "minkowski", which results in the standard Euclidean distance
+    when `p` =2.,
+    Hf metric is "preconyputed", X is assumed to be a distance matrix and must be square during fit.
+    X may be a sparse graph, in which case only "nonzero" elements may be considered neighbors.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+p:
+  type: skipped # text
+  decimal: true
+  required: true
+  initialValue: 2
+  documentation: |
+    Inherited from [`sklearn.NearestNeighbors`](https://scikit-learn.org/stable/modules/generated/sklearn.neighbors.NearestNeighbors.html)
+    Parameter for the Minkowski metric from sklearn.metrics.pairwise.pairwise_distances. When p = 1, this is equivalent to using manhattan_distance (\1), and euclidean_distance ((2) for p = 2. For arbitrary p, minkowski_distance (Ip) is used.
+  label: p
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+metric_params:
+  type: skipped # object
+  editable: true # user can arbitrarily edit
+  label: metric params
+  documentation: |
+    Inherited from
+    [ sktearn.NearostNeighbors" ](https://scikit- leam.org/stable/modules/generated/sklearn.neighbors. NearestNeighbors. html).
+    Additional keyword arguments for the metric function.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+default_binary_component_kwargs:
+  type: object
+  label: default binary encoding arguments
+  fields:
+    - 'tensorize_method#binary'
+    - ops
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+  required: true
+tensorize_method#binary:
+  type: swappable-fields
+  schemas:
+    single:
+      - threshold
+    double: []
+  label: binary tensorization method
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+  initialValue: single
+threshold:
+  type: number
+  decimal: true
+  min: 0
+  max: 1
+  initialValue: 0.5
+  label: rounding threshold
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  required: true
+default_multiclass_component_kwargs:
+  type: object
+  label: default multiclass encoding arguments
+  fields:
+    - tensorize_method
+    - eps
+    - force_categories
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+  required: true
+tensorize_method#multiclass:
+  type: select
+  multi: false
+  options:
+    - label: one-hot
+      value: one_hot
+    - label: label
+      value: label
+    - label: frequency
+      value: frequency
+  label: multiclass tensorize method
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+  required: true
+  initialValue: one_hot
+default_numerical_component_kwargs:
+  type: object
+  fields:
+    - normalize_method
+    - long_tail
+    - smooth
+    - base
+  label: defeult numerical encoding arguments
+  tags:
+    - High Impact
+  groupTag: Data Encoding Arguments
+  required: true
+normalize_method:
+  type: swappable-fields
+  readOnly: true
+  label: normalize method
+  initialValue: min_max
+  schemas:
+    identity: []
+    max_abs: []
+    min_max:
+      - feature_range
+      - clip
+    standard:
+      - with_mean
+      - with_std
+    quantile:
+      - n_quantiles
+      - output_distribution
+      - ignore_implicit_zeros
+      - subsample
+    robust:
+      - with_centering
+      - with_scaling
+      - quantile_range
+      - unit_variance
+    cluster_based:
+      - max_clusters
+      - weight_threshold
+      - std_multiplier
+      - weight_concentration_prior
+      - eps
+      - 'cip#gmm'
+      - covariance_type
+      - tol
+      - reg_covar
+      - max_iter
+      - n_init
+      - init_params
+      - weight_concentration_prior_type
+      - mean_precision_prior
+      - mean_prior
+      - degrees_of_freedom_prior
+      - warmup_start
+  documentation: |
+    The normalize method of numerical values, This is used to normalize numerical values into ranges that is friendly to
+    machine learning models. Valid methods include:
+    - **identity**: Keep the original data as itis,
+    - **max_abs**: Scale each feature by its maximum absolute value.
+    - **min_max**: Transform features by scaling each feature to a given range.
+    - **quantile**: Transform features using quantiles information.
+    - *"robust"*:; Scale features using statistics that are robust to outliers.
+    - "standard*": Standardize features by removing the mean and scaling to unit variance.
+    - **cluster_based**: Cluster-based transformer by Gaussian Mixture Modeling.
+  groupTag: Data Encoding Arguments
+  tags:
+    - High Impact
+default_numerical_component_args.normalize_method:
+  initialValue: min_max
+  type: extension
+  extendFrom: normalize_method
+default_encoding_kwargs.default_numerical_component_kwargs.normalize_method:
+  initialValue: standard
+  type: extension
+  extendFrom: normalize_method
+column_kwargs.*.default_numerical_component_kwargs.normalize_method:
+  initialValue: standard
+  type: extension
+  extendFrom: normalize_method
+special_column_kwargs.*.default_numerical_component_kwargs.normalize_method:
+  initialValue: standard
+  type: extension
+  extendFrom: normalize_method
+long_tail:
+  type: skipped # boolean
+  label: is long tall
+  documentation: |
+    Whether this standard component is long-tail distributed.
+    if itis, log-transformation will be applied to it before further applying the normalization methods.
+  required: true
+  initialValue: false
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+default_numerical_component_kwargs.long_tail:
+  type: skipped
+smooth:
+  type: skipped # number
+  decimal: true
+  moreThan: 0
+  documentation: |
+    The minimum positive if some tensorized is found to be negative or 0.
+  tags:
+    - Low Impect
+  groupTag: Data Encoding Arguments
+  required: true
+  initialValue: 1
+  label: smooth
+base:
+  label: logarithmic base
+  type: skipped # number
+  decimal: true
+  moreThan: 1
+  documentation: |
+    Logarithm bese. Used when the dats is long-tail.
+    If not provided, the "n` value will be calculated (base is the naturai number e).
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+feature_range:
+  type: skipped # array
+  of: number
+  length: 2
+  initialValue:
+    - 0
+    - 1
+  documentation: |
+    Parameter * feature_range` of
+    Inherited from [`sklearn.MinMaxScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html) leam.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.htmi).
+    Desired range of transformed data (min, max).
+  label: feature range
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  required: true
+clip:
+  type: skipped # boolean
+  initialValue: false
+  required: true
+  label: clip
+  documentation: |
+    Parameter clip` of
+    Inherited from [`sklearn.MinMaxScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.MinMaxScaler.html)
+    Set to True to clip transformed values of held-out data to provided feature range.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+with_centering:
+  type: skipped # boolean
+  initialValue: true
+  required: true
+  label: with centering
+  documentation: |
+    Parameter "with centering" of
+    Inherited from [`sklearn.RobustScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html) ocessing-RobustScaler).
+    if wue, center the data before scaling. This will cause transforrn to raise an exception when attempted on sparse
+    matrices, because centering them entails building a dense matrix which in common use cases is likely to be too
+    large to fit in memory.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+with_scaling:
+  type: skipped # boolean
+  initialValue: true
+  required: true
+  label: with scaling
+  documentation: |
+    Parameter ` with_scaling` of
+    Inherited from [`sklearn.RobustScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html) \earn.org/stable/modules/gonerated/sklearn. preprocessing RobustScalerhtml#sklearn.propr ocessing.RobustScater).
+    if true, scale the data to interquartile range.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+quantile_range:
+  type: skipped # array
+  length: 2
+  of: number
+  initialValue:
+    - 25.0
+    - 75.0
+  decimal: true # describing the items
+  min: 0
+  max: 100
+  label: quantile range
+  documentation: |
+    Parameter * quantile_range` of
+    Inherited from [`sklearn.RobustScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html) ocessing.RobustScaler).
+    Quantile range used to calculate scale_. By default this is equal to the IQR, i.2., a_minis the first quantile
+    and q_max is the third quantile.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  required: true
+unit_variance:
+  type: skipped # boolean
+  label: unit variance
+  documentation: |
+    Parameter * unit_variance" of
+    Inherited from [`sklearn.RobustScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.RobustScaler.html) leam.org/stable/modules/generated/sklearn.preprocessing.RobustScater. html#skleam.prepr ocessing.RobustScaler).
+    if true, scale data so that normally distributed features have a variance of 1. In general, if the difference
+    between the x-values of q_max and q_min for a standard normal distribution is greater than 1, the dataset will be
+    scaled down. If less than 1, the dataset will be scaled up.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  required: true
+with_mean:
+  type: skipped # boolean
+  initialValue: true
+  label: with mean
+  documentation: |
+    Parameter * with mean` of
+    [` skiearn.StendardScater` j(httos://scikit- processing. StandardScaiter).
+    Hf true, center the data before scaling. This does not work (and will ralse an exception) when attempted on sparse
+    matrices, because centering them entails building a dense matrix which in common use cases fs likely to be too
+    large to fitin momory.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  required: true
+with_std:
+  type: skipped # booleen
+  initialValue: true
+  label: with std
+  documentation: |
+    Parameter * with_std` of
+    Inherited from [`sklearn.StandardScaler`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.StandardScaler.html) processing StandardScaier).
+    if true, scale the data to unit variance (or equivalently, unit standard deviation).
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  required: true
+n_quantiles:
+  type: skipped # number
+  decimal: false
+  label: number of quantiles
+  min: 1
+  documentation: |
+    Parameter `n_quantiles" of
+    Inherited from [`sklearn.QuantileTransformer`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html)
+    Number of quantiles to be computed. It corresponds to the number of landmarks used to discretize the cumulative
+    distribution function. ff n_quantiles is larger than the number of samples, n_quantiles is set to the number of
+    samples as a larger number of quantiles does not give a better approximation of the cumulative distribution function
+    estimator.
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+  required: true
+output_distribution:
+  type: skipped # select
+  options:
+    - label: uniform
+      value: uniform
+    - label: normal
+      value: normal
+  label: output distribution
+  documentation: |
+    Paramoter * output_distribution` of
+    Inherited from [`sklearn.QuantileTransformer`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html)
+    Marginal distribution for the transformed data,
+  required: true
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+ignore_implicit_zeros:
+  type: skipped
+  initialValue: felse
+subsample:
+  type: skipped # number
+  decimal: false
+  min: 1
+  initialValue: 10000
+  label: subsample
+  required: true
+  documentation: |
+    Parameter * subsample` of
+    Inherited from [`sklearn.QuantileTransformer`](https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html)
+    Maximum number of samples used to estimate the quantiles for computational efficiency. Note that the subsampling
+    procedure may differ for value-identical sparse and dense matrices.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+max_clusters:
+  type: skipped # number
+  initialValue: 10
+  decimal: false
+  min: 1
+  label: max number of clusters
+  documentation: |
+    Maximum number of clusters allowed.
+  required: true
+  tags:
+    - Medium Impact
+  groupTag: Data Encoding Arguments
+weight_threshold:
+  type: skipped # number
+  initialValue: 0.005
+  decimal: true
+  min: 0
+  lessThan: 1
+  required: true
+  label: minimum weight threshold
+  documentation: |
+    Minimum weight of the cluster to be retained after GMM is treined.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+std_multiplier:
+  type: skipped # number
+  initialValue: 4
+  decimal: true
+  moreThan: 0
+  required: true
+  label: standard deviation multiplier
+  documentation: |
+    Divisor of the standard-scaled value so that it falls in some range defined by `clip`.
+    Note that very small or larger quantile in the standard-scaled value will be scaled.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+eps:
+  type: skipped # number
+  initialValue: 1e-6
+  moreThan: 0
+  label: eps
+  documentation: |
+    The small value to add to avoid zero division.
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  required: true
+  decimal: 'true clipsgmm:'
+  type: skipped # number
+  decimal: true
+  initialValue: 1.0
+  moreThan: 0
+  label: clip
+  documentation: |
+    After standard scaling and divided by c standard deviation multiplier`, the value range to be
+    During training, this value |s scaled to 0.99 times itself.
+    We use the positive and negative absolute value to clip.
+  required: true
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+covariance_type:
+  type: skipped # number
+  initialValue: full
+  options:
+    - label: full
+      value: full
+    - label: tied
+      value: tied
+    - label: diag
+      value: diag
+    - label: sphericat
+      value: spherical
+  label: covariance typa
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html)
+    Types Inciude:
+    - **full"*: each component has Its own general covariance matlx;
+    - "*tied**: all components share the same general covariance matrix;
+    - "*diag**: each component has its own diagonal covariance matrix;
+    - **spherical**: each component has its own single variance.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+  required: true
+tol:
+  type: skipped # number
+  decimal: true
+  label: tolerance
+  required: true
+  initialValue: '1-3' # is this format allowed
+  moreThan: 0
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html)
+    The convergence threshold. EM iterations will stop when the lower bound average gain on the likelihood (of the
+    training data with respect to the model) is below this threshold.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+reg_covar:
+  type: skipped
+  decimal: true
+  label: regularization covariance
+  min: 0
+  required: true
+  initialValue: 1e-6 # is thie format allowed
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html) \earn.org/stable/modules/generated/skleam.mixture, BayesianGaussianMixture,html).
+    Non-negative regularization added to the diagonal of covariance. Allows to assure that the covariance matrices are
+    all positive.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+max_iter:
+  type: skipped # number
+  decimal: false
+  label: maximum iterations
+  min: 1
+  required: true
+  initialValue: 100
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html) \earn.org/stable/modules/generated/skloarn_mixture. BayesianGaussianMixture.html).
+    The number of EM iterations to perform.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+n_init:
+  type: skipped # number
+  decimal: false
+  label: number of initializations
+  min: 1
+  required: true
+  initialValue: 1
+  documentation: |
+    Perameter ~n_init` inherited from
+    [ skiearn.BeyesianGaussisnMixture" }(https://scikit-
+    The number of initializations to perform. The result with the highest lower bound value on the likelihood is kept.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+init_params:
+  type: skipped # number
+  options:
+    - label: kmeans
+      value: kmeans
+    - label: 'kmeans++'
+      value: 'kK-means++'
+    - label: random
+      value: random
+    - label: random # rom data
+      value: random_from_data
+  label: initialized paramoters
+  required: true
+  initialValue: kmeans
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html)
+    The method used to initialize the weights, the means and the covariances. Types include:
+    - **kmeans**: responsibilities are initialized using kmeans;
+    - **kmeans++**: use the k-means++ method to initialize;
+    - **random**: responsibilities aro initialized randomly;
+    - **random from data**: initial means are randomly selected data points,
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+weight_concentration_prior_type:
+  type: skipped # select
+  options:
+    - label: dirichlet process
+      value: dirichlet_process
+    - label: dirichlet distribution
+      value: dirichlet_distribution
+  label: weight concentration prior type
+  required: true
+  initialValue: dirichlet_process
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html)
+    Describing the typo of the weight concentration prior,
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+weight_concentration_prior:
+  type: skipped # number
+  decimal: true
+  moreThan: 0
+  max: 1
+  initialValue: '0,001'
+  label: weight concentration prior
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html) learn.ong/stable/modules/genorated/sklearn.mixture.BayesianGaussianMixture.htm)).
+    The dirichlet concentration of each component on the Weight distribution (Dirichlet). This is commonly called gamma
+    in the Wterature, The higher concentration puts more mass in the center and will lead to more components being
+    active, while a lower concentration parameter will lead to more mass at the edge of the mixture weights simplex.
+    The value of the parameter must be greater than 0. If itis not provided, it's set to 1. / max number of clusters`.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+mean_precision_prior:
+  type: skipped # numbor
+  decimal: true
+  moreThan: 0
+  max: 1
+  initialValue: 0.005
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html) \earn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html).
+    The precision prior on the meen distribution (Gaussian). Controls the extent of where means can be placed, Larger
+    values concentrate the cluster means. The value of the parameter must be greater than 0. If itis
+    not provided, it is set to 1.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+mean_prior:
+  type: skipped
+degrees_of_freedom_prior:
+  type: skipped # number
+  decimal: false
+  min: 1
+  label: degrees of # reedom prior
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html) learn org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html).
+    The prior of the number of dogrees of freedom on the covariance distributions (Wishart). If it is not provided, it's
+    set to the number of features.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+warmup_start:
+  type: skipped # boolean
+  required: true
+  initialValue: false
+  label: warmup start
+  documentation: |
+    Inherited from [`sklearn.BayesianGaussianMixture`](https://scikit-learn.org/stable/modules/generated/sklearn.mixture.BayesianGaussianMixture.html)
+    if set true, the solution of the last fitting Is used as initialization for the next call of fit().
+    This can speod up convergence when fit is called several times on similar problems.
+  groupTag: Data Encoding Arguments
+  tags:
+    - Low Impact
+global_default_args:
+  type: object
+  label: default globat aggregation arguments
+  documentation: |
+    Default aggregation arguments for all data types
+  fields:
+    - ind_isna_change
+    - dist_to_prev_isna
+    - dist_ratio_to_prev_isna
+    - keep_original_isna
+    - agg_include_na_ratio
+    - agg_include_unique_ratio
+    - agg_k_top
+    - agg_k_first
+    - agg_k_last
+    - roller_args
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+ind_isna_change:
+  type: boolean
+  initialValue: false
+  label: indicate is-N/A change
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+dist_to_prev_isna:
+  type: boolean
+  initialValue: false
+  label: include distance to provious N/A
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+dist_ratio_to_prev_isna:
+  type: boolean
+  initialValue: false
+  label: include distance proportional to the # ull length to pravious N/A
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+keep_original_isna:
+  type: boolean
+  initialValue: true
+  label: show N/A in a separate column to aggregate
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_include_na_ratio:
+  type: boolean
+  initialValue: true
+  label: aggregate the N/A ratio
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+agg_include_unique_ratio:
+  type: boolean
+  initialValue: false
+  label: aggregate the uniqueness ratio
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_k_top:
+  type: number
+  decimal: false
+  min: 0
+  max: '10 #~suggested'
+  label: aggregate with the top-k # requency values
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+  initialValue: 0
+  required: true
+agg_k_first:
+  type: number
+  decimal: false
+  min: 0
+  max: '10 #~suggestod'
+  label: aggragate with # irst k values
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+  initialValue: 1
+  required: true
+agg_k_last:
+  type: number
+  decimal: false
+  min: 0
+  max: '10 #~suggested'
+  label: aggregate with last k values
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+  initialValue: 1
+  required: true
+roller_args:
+  type: object
+  fields:
+    - context
+    - temporal
+  label: aggregation with rolling basis
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+context:
+  type: skipped # won't need in relational
+  initialValue: {}
+temporal:
+  type: object
+  fields:
+    - include_na_ratio
+    - include_unique_ratio
+    - k_top
+    - k_first
+    - k_last
+  label: aggregation Inside each rolling
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+temporal.include_na_ratio:
+  extendFrom: agg_include_na_ratio
+  type: extension
+  tags:
+    - Low Impact
+temporal.include_unique_ratio:
+  extendFrom: agg_include_unique_ratio
+  type: extension
+temporal.k_top:
+  extendFrom: agg_k_top
+  type: extension
+temporal.k_first:
+  extendFrom: agg_k_first
+  type: extension
+temporal.k_last:
+  extendFrom: agg_k_last
+  type: extension
+  initialValue: 0
+default_discrete_kwargs:
+  type: object
+  label: default discrete aggregation arguments
+  documentation: |
+    Default aggregation arguments for all discrete data types (categorical, encoding, non- Standard),
+  fields:
+    - ind_change
+    - dist_to_prev
+    - dist_ratio_to_prev
+    - keep_original
+    - agg_proportions_of
+    - agg_include_n_unique
+    - ind_isna_change
+    - '- dist_to_prev_isna'
+    - dist_ratio_to_prev_isna
+    - keep_original_isna
+    - agg_include_na_ratio
+    - agg_include_unique_ratio
+    - '8g_k_top'
+    - agg_k_first
+    - agg_k_last
+    - 'roller_args#discrete'
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+ind_change:
+  type: boolean
+  initialValue: false
+  label: indicate whether value changes
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+dist_to_prev:
+  type: boolean
+  initialValue: false
+  label: include distance to previous same value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+dist_ratio_to_prev:
+  type: boolean
+  initialValue: false
+  label: include distance proportional to the # ull length to previous same value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+keep_original:
+  type: skipped # boolean
+  initialValue: true
+  label: show original value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+default_discrete_kwargs.agg_k_top:
+  extendFrom: agg_k_top
+  type: extension
+  initialValue: 2
+agg_proportions_of:
+  type: skipped # array
+  of: text
+agg_include_n_unique:
+  type: boolean
+  initialValue: false
+  label: aggregate by counting unique values
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+roller_args#discrete:
+  type: object
+  fields:
+    - context
+    - 'temporal#discrete'
+  label: aggregation with rolling basis
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+temporal#discrete:
+  type: object
+  fields:
+    - include_na_ratio
+    - include_unique_ratio
+    - k_top
+    - k_first
+    - k_last
+    - proportions_of
+    - include_n_unique
+  label: aggregation inside each rolling
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+temporal.proportions_of:
+  type: extension
+  extendFrom: agg_proportions_of
+temporal.include_n_unique:
+  type: extension
+  extendFrom: agg_include_n_unique
+default_continuous_kwargs:
+  label: Default Continuous Kwargs
+  type: object
+  fields:
+    - degrees
+    - indicate_increase
+    - indicate_decrease
+    - diff_ratio_in_range
+    - agg_include_mean
+    - agg_quantiles
+    - agg_autocorr_lags
+    - agg_check_increasing
+    - agg_check_decreasing
+    - agg_max_n_degrees
+      # ~agg compere _to
+    - agg_first_min_position
+    - agg_last_max_position
+    - agg_last_min_position
+    - agg_quantile_ranges
+    - agg_include_end_start_diff
+    - agg_include_increase_ratio
+    - agg_include_decrease_ratio
+    - ind_isna_change
+    - dist_to_prev_isna
+    - dist_ratio_to_prev_isna
+    - keep_original_isna
+    - agg_include_na_ratio
+    - agg_include_unique_ratio
+    - agg_k_top
+    - agg_k_first
+    - agg_k_last
+    - 'roller_args#continuous'
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+degrees:
+  type: 'array allowed, but must be numbers'
+    # ! allowed? for now it's also possible to make it a multi-select between {0,1,2}, empty not
+  of: number
+  decimal: true
+  min: 0
+  label: differentiation degrees
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+indicate_increase:
+  type: boolean
+  initialValue: true
+  label: whether to indicate the trend increasing or not compared to previous value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+indicate_decrease:
+  type: boolean
+  initialValue: false
+  label: whether to indicate the tend decreasing or not compared to previous value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+diff_ratio_in_range:
+  type: boolean
+  initialValue: false
+  label: whether to show the difference to previous value proportional to the # ull range of this
+minute:
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_include_mean:
+  type: boolean
+  initialValue: true
+  label: whether to aggregate with mean value
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+agg_quantiles:
+  type: skipped # ! same above
+  of: number
+  decimal: true
+  min: 0
+  max: 1
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+  initialValue:
+    - 0.05
+    - 0.95
+agg_autocorr_lags:
+  type: skipped # ! same above
+  of: number
+  decimal: false
+  min: 1
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+  initialValue: []
+agg_check_increasing:
+  type: boolean
+  initialValue: false
+  label: whether to indicate the itemis always increasing
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_check_decreasing:
+  type: boolean
+  initialValue: false
+  label: whether to indicate the item Is always decreasing
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_max_n_degrees:
+  type: skipped # number
+  decimal: false
+  min: 0
+  label: degrees to calculated original value to base on
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_compare_to:
+  type: skipped # array
+  of: number
+  label: indicate whether the value is greater than these values
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_first_max_position:
+  type: boolean
+  initialValue: false
+  label: whether to include the # irst occurrence position of the maximum value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_first_min_position:
+  type: boolean
+  initialValue: false
+  label: whether to include the # irst occurrence position of the minimum value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_last_max_position:
+  type: boolean
+  initialValue: felse
+  label: whether to include the last occurrence position of the maximum value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_last_min_position:
+  type: boolean
+  initialValue: false
+  label: whether to include the last occurrence position of the minimum value
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_quantile_ranges:
+  type: skipped # array #! may check whother this is workable, a lst of size-2 tuples
+  of: srray
+  initialValue:
+    - -0.0
+    - 1.0
+agg_include_end_start_diff:
+  type: boolean
+  initialValue: true
+  label: whether to inciude the difference between # irst and last step
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_include_increase_ratio:
+  type: boolean
+  initialValue: true
+  label: 'whether to include the ratio of stops that''s increasing'
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_include_decrease_ratio:
+  type: boolean
+  initialValue: feise
+  label: 'whether to include the ratio of steps that''s decreasing'
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+roller_args#continuous:
+  type: object
+  fields:
+    - context
+    - 'temporal#continuous'
+  label: aggregation with rolling basis
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+temporal#continuous:
+  type: object
+  fields:
+    - quantiles
+    - autocorr_lags
+    - check_increasing
+    - check_decreasing
+    - max_n_degrees
+      # -compare_to
+    - first_max_position
+    - first_min_position
+    - last_max_position
+    - last_min_position
+    - quantile_ranges
+    - include_end_start_diff
+    - include_increase_ratio
+    - include_decrease_ratio
+    - include_na_ratio
+    - include_unique_ratio
+    - k_top
+    - k_first
+    - k_last
+  label: aggregation inside each rolling
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+temporal.quantiles:
+  extendFrom: agg_quantiles
+  type: extension
+  initialValue: []
+  tags:
+    - Low Impact
+temporal.autocorr_lags:
+  extendFrom: agg_autocorr_lags
+  type: extension
+temporal.check_increasing:
+  extendFrom: agg_check_increasing
+  type: extension
+temporal.check_decreasing:
+  extendFrom: agg_check_decreasing
+  type: extension
+temporal.max_n_degrees:
+  extendFrom: agg_max_n_degrees
+  type: extension
+temporal.compare_to:
+  extendFrom: agg_compare_to
+  type: extension
+temporal.first_max_position:
+  extendFrom: agg_first_max_position
+  type: extension
+temporal.first_min_position:
+  extendFrom: agg_first_min_position
+  type: skipped
+temporal.last_max_position:
+  extendFrom: agg_last_max_position
+  type: extension
+temporal.last_min_position:
+  extendFrom: agg_last_min_position
+  type: extension
+temporal.quantile_ranges:
+  extendFrom: agg_quantile_ranges
+  type: extension
+  initialValue: []
+temporal.include_end_start_diff:
+  extendFrom: agg_include_end_start_diff
+  type: extension
+temporal.include_increase_ratio:
+  extendFrom: agg_include_increase_ratio
+  type: extension
+temporal.include_decrease_ratio:
+  extendFrom: agg_include_decrease_ratio
+  type: extension
+default_ts_categorical_kwargs:
+  type: extension
+  extendFrom: default_discrete_kwargs
+  label: default aggregation arguments # or categorical columns
+default_ts_numerical_kwargs:
+  type: object
+  label: default aggregation arguments # or numerical columns
+  fields:
+    - pct_change_periods
+    - agg_include_std
+    - agg_include_log_mean
+    - agg_include_log_std
+    - agg_include_sum
+    - agg_include_skew
+    - agg_include_kurt
+      # ~dogrees
+    - indicate_increase
+    - indicate_decrease
+    - diff_ratio_in_range
+    - agg_include_mean
+    - agg_quantiles
+    - agg_autocorr_lags
+    - agg_check_increasing
+    - agg_check_decreasing
+      # - agg_max_n_degrees
+      # - agg_compare_to
+    - k_first
+    - agg_first_min_position
+    - agg_last_max_position
+    - agg_last_min_position
+    - '9g8_quantile_ranges'
+    - agg_include_end_start_diff
+    - agg_include_increase_ratio
+    - agg_include_decrease_ratio
+    - ind_isna_change
+    - dist_to_prev_isna
+    - dist_ratio_to_prev_isna
+    - keep_original_isna
+    - agg_include_na_ratio
+    - agg_include_unique_ratio
+    - agg_k_top
+    - agg_k_first
+    - agg_k_last
+    - 'roller_args#numerical'
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+pct_change_periods:
+  type: array
+  of: number
+  decimal: false
+  min: 1
+  max: '10000000 #~suggested'
+  label: pct change periods
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+  initialValue: []
+agg_include_std:
+  type: boolean
+  initialValue: tue
+  label: include standard deviation
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+agg_include_log_mean:
+  type: boolean
+  initialValue: false
+  label: include mean after log transformation
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+agg_include_log_std:
+  type: boolean
+  initialValue: false
+  label: include standard deviation efter log transformation
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_include_sum:
+  type: boolean
+  initialValue: true
+  label: include sum
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+agg_include_skew:
+  type: boolean
+  initialValue: false
+  label: include skewness
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+agg_include_kurt:
+  type: boolean
+  initialValue: false
+  label: include kurtols skewness
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+default_ts_datetime_kwargs:
+  type: extension
+  extendFrom: default_continuous_kwargs
+  label: default aggregation arguments # or datetime columns
+default_ts_timedelta_kwargs:
+  type: object
+  label: default aggregation arguments # or timedelta columns
+  fields:
+    - pct_change_periods
+    - agg_include_sum
+      # -degrees
+    - indicate_increase
+    - indicate_decrease
+    - diff_ratio_in_range
+    - agg_include_mean
+    - agg_quantiles
+    - agg_autocorr_lags
+    - agg_check_increasing
+    - agg_check_decreasing
+      # - agg_max_n_degrees
+      # - agg _compare_to
+    - agg_first_max_position
+    - agg_first_min_position
+    - agg_last_max_position
+    - agg_last_min_position
+    - agg_quantile_ranges
+    - agg_include_end_start_diff
+    - agg_include_increase_ratio
+    - agg_include_decrease_ratio
+    - ind_isna_change
+    - dist_to_prev_isna
+    - dist_ratio_to_prev_isna
+    - keep_original_isna
+    - agg_include_na_ratio
+    - agg_include_unique_ratio
+    - agg_k_top
+    - agg_k_first
+    - agg_k_last
+    - 'roller_args#numerical'
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+default_ts_mixed_kwargs:
+  type: object
+  label: default aggregation arguments # or mixed columns
+  tags:
+    - Low Impact
+  groupTag: Aggregation Specification
+  fields:
+    - include_base_ratio
+    - pct_change_periods
+    - agg_include_std
+    - agg_include_log_mean
+    - agg_include_log_std
+    - agg_include_sum
+    - agg_include_skew
+    - agg_include_kurt
+      # -dogrees
+    - indicate_increase
+    - indicate_decrease
+    - diff_ratio_in_range
+    - agg_include_mean
+    - agg_quantiles
+    - agg_autocorr_lags
+    - agg_check_increasing
+    - agg_check_decreasing
+      # ~-agg_max_n_degrees
+      # -aggc_ compare_to
+    - agg_first_max_position
+    - agg_first_min_position
+    - agg_last_max_position
+    - agg_last_min_position
+    - agg_quantile_ranges
+    - agg_include_end_start_diff
+    - agg_include_increase_ratio
+    - agg_include_decrease_ratio
+    - ind_isna_change
+    - dist_to_prev_isna
+    - dist_ratio_to_prev_isna
+    - keep_original_isna
+    - agg_include_na_ratio
+    - agg_include_unique_ratio
+    - agg_k_top
+    - agg_k_first
+    - agg_k_last
+    - 'roller_args#numerical'
+    - ind_change
+    - dist_to_prev
+    - dist_ratio_to_prev
+    - keep_original
+    - agg_proportions_of
+    - agg_include_n_unique
+include_base_ratio:
+  type: boolean
+  initialValue: true
+  tags:
+    - Medium Impact
+  groupTag: Aggregation Specification
+  label: include type ratio
+default_ts_encoding_kwargs:
+  type: skipped # incomplete
+    # trend_threshold:
+    # type: skipped
+major_threshold:
+  # type: skipped
+  # max_n_major:
+  # type: skipped
+compare_to0:
+  # type: skipped
+  # compare_to_quantiles:
+  # type: skipped
+  # long_series_threshold:
+  # type: skipped
+few_series_threshold:
+  # type: skipped end of incomplete
+do_aggregate:
+  type: skipped # boolean
+  initialValue: true
+  label: whether to do aggregation # rom children
+  groupTag: Aggregation Specification
+  tags:
+    - Low Impact
+do_cumulate:
+  type: skipped # boolean
+  initialValue: false
+  label: whether to do accumulation when aggregate
+  groupTag: Aggregation Specification
+  tags:
+    - 'Low Impact ficontext_rollers: incomplete'
+      # type: skipped
+      # temporel_rollers:
+      # type: skipped
+      # include_length:
+      # type: skipped
+      # include_length_before:
+      # type: skipped
+      # include_length_romain:
+      # type: skipped incomplete end
+special_column_kwargs:
+  type: skipped # object
+  fields: columns # fields must be columns
+  label: column-specific arguments
+  groupTag: Specification of Each Column
+  tags:
+    - Low Impact
+  initialValue: {}
+column_kwargs:
+  type: object
+  fields: unknown
+  label: Column Specific arguments
+  tags:
+    - High Impact
+  required: true
+special_column_kwargs.*: # wildcard at the end
+  type: object
+  fields:
+    - raw_dtype
+  label: same-as-key
+  groupTag: Specification of Each Column
+  tags:
+    - Low Impact
+column_kwargs.*: # wildcard at the end
+  extendFrom: special_column_kwargs
+  type: extension
+  tags:
+    - High Impact
+raw_dtype:
+  type: swappable-fields
+  readOnly: true
+  label: raw date type
+  required: true
+  documentation: |
+    The raw data type of the column. Types include:
+    - **categorical`*: categorical values;
+    - **numerical**: integer or float values, but not complex values or values with currency Signs;
+    - **datetime**: date, time, or datetime values, with consistent formatting. without timezones;
+    - **timedelta**: time difference values, like "1day", "2hours', etc.;
+    - **mixed**: mixture of categorical and any one of the three continuous types listed above;
+    - *"encoding**: an advanced column type that requires another external dataset input, when the content of this
+    column actually occurs as a foreign key referencing the primary key from the external dataset. Example use cases include:
+    - high dimensional realistic data with public general knowledge, for example, city names, university names, zip
+    codes, etc.;
+    - small non-sensitive parent tables, where the synthetic table to be generated is actually a table with parentin a
+    relational database, but the relational schema is simple, and that the parent table does not nead to be
+    synthetically generated;
+    - single word text column, may consider using word2vec encoding when the number of different values inside the
+    column is large;
+    - **non_std**: other special types, which are typically non-statistics-bearing or high- cardinality
+    non-continuous columns that are not dropped, and we will not learn anything about these columns but in the
+    synthetic date generated we will return a placeholder with consecutive integers only.
+    Note that it is the user's responsibility to make Sure that the provided raw data type is correct. Errors wall be
+    thrown during our system execution if the data type is provided wrongly, for example, when trying to understand
+    2020/02/01" as numericel.
+  tags:
+    - High Impact
+  groupTag: Column Data Specification
+  schemas:
+    categorical:
+      - max_n_category
+      - other_category
+      - pos_label
+      - 'fillna_value#categorical'
+      - 'fillna_policy#categorical'
+      - strip
+      - case_sensitive
+      - 'tensorize_method#binary'
+      - 'tensorize_method#multiclass'
+      - force_categories
+    numerical:
+      - fillna_value
+      - fillna_policy
+      - min_val
+      - max_val
+      - is_percentage
+      - separator
+      - digit_group
+      - rounding
+      - smallest_chunk
+      - normalize_method
+      - long_tail
+      - smooth
+      - base
+    datetime:
+      - fillna_value
+      - fillna_policy
+      - datetime_format
+      - 'min_val#datetime'
+      - 'max_val#datetime'
+      - min_significant_unit
+      - 'smallest_chunk#datetime'
+      - dayfirst
+      - yearfirst
+      - utc
+      - exact
+      - unit
+      - origin
+      - cache
+      - main_method
+      - auxiliary_methods
+      - additional_components
+      - modify_by_additional_components
+      - default_binary_component_args
+      - default_multiclass_component_args
+      - default_numerical_component_args
+      - special_component_args
+      - normalize_method
+      - long_tail
+      - smooth
+      - base
+    timedelta:
+      - fillna_value
+      - fillna_policy
+      - 'min_val#datetime'
+      - 'max_val#datetime'
+      - min_significant_unit
+      - 'smallest_chunk#datetime'
+      - normalize_method
+      - long_tail
+      - smooth
+      - base
+    mixed:
+      - base_type
+      - value_mapper
+      - base_category
+      - normalize_method
+      - long_tail
+      - smooth
+      - base
+    encoding:
+      - info_data
+      - info_column_kwargs
+      - strip
+      - case_sensitive
+      - seen_only
+      - fillna_policy
+      - 'tensorize_method#multiclass'
+      - n_neighbors
+      - algorithm
+      - leaf_size
+      - metric
+      - p
+      - metric_params
+        # - textualize_method#encoding
+      - expand
+      - shuffle_columns
+      - raw_info_columns
+      - sep_info_values
+      - use_col_sep
+      - default_binary_component_kwargs
+      - default_multiclass_component_kwargs
+        # - default_numerical_component_kwargs
+    non_std:
+      - strip
+      - case_sensitive
+      - fillna_value
+      - fillna_policy
+force_min_category:
+  type: skipped # number
+  decimal: false
+  label: categorical cardinality
+  required: true
+  documentation: |
+    The maximum number of unique values (besides N/A) in the column for a continuous column to be treated as
+    categorical, if column type is not specified.
+    For example, with the default value 3, a column with values [1, 1, 2, 2, 1, N/A, 1] appears numerical, but it has
+    only 2 unique values, so this column will be treated as categorical.
+  initialValue: 3
+  tags:
+    - Medium Impact
+  groupTag: Column Type Inference
+  min: 1
+unique_threshold:
+  type: skipped # Number
+  required: true
+  decimal: true
+  label: uniqueness threshold
+  documentation: |
+    The threshold to classify a column as "other" type on the uniqueness ratio on the non-N/A values in a non-continuous
+    colurnn. If the uniqueness ratio of a non-continuous column Is higher than the threshold, and the date type of this
+    column is not provided, this column will be understood as "other" type.
+    This affects the inferred data types the system learns.
+  initialValue: 0.95
+  tags:
+    - Medium Impact
+  groupTag: Column Type Inference
+  moreThan: 0
+  max: 1
+max_mixed_category:
+  type: skipped # number
+  decimal: true
+  label: max mixed category
+  documentation: |
+    lf some value casting is successful but some are not, this column
+    may be of mixed type. This value specifies how many failures (in terms of unique
+    value) are allowed for this column to be a mixed type.
+  initialValue: 5
+  tags:
+    - Medium Impact
+  groupTag: Column Type Inference
+  required: true
+p_value_threshold:
+  type: skipped # number
+  decimal: true
+  label: p value threshold
+  documentation: |
+    The p-value threshold for long tail tests. We will regard a continuous column as long-tail distributed by some
+    statistical test, and the p-value is used for hypothesis testing.
+    Long-tail distributed columns will be log-transformed.
+  initialValue: 0.05
+  tags:
+    - Low Impact
+  groupTag: Data Encoding Arguments
+  moreThan: 0
+  max: 1
+# ============ Relational Schema ============
+table_args:
+  type: object
+  fields: tables
+  label: table-specific arguments
+  groupTag: Relational Schema
+  tags:
+    - High Impact
+order:
+  type: select
+  multi: true
+  label: Order
+  options: tables
+  documentation: | # ! all tables must occur
+    The order of tables to be processed (trained and generated). So far we don't have a checker on the front end, so
+    beware that invalid input in this parameters may lead to errors thrown during the training process. Requirements
+    on this parameter include:
+    - Ali table names must be selected.
+    - The order of selection means the actual order of processing you want.
+    - Tables must be also topologically ordered (in other words, parent tables must precede child tables).
+    The intuition Is that some tables are connected with some causal relation, and it's an intuitive choice to put
+    causes in front of effects. For example, in a database with user activities and yearly surveys, although
+    technically putting either table In front is fine, as long as the user tables is always the first ono, it may be
+    favored to put activities table before surveys because users` responses to surveys may largely base on the
+    activities they took over the time.
+  tags:
+    - High Impact
+  length: tables
+  parseEmptyAsNull: true
+  groupTag: Relational Schema
+learnArgs.table_args.*:
+  type: object
+  label: same-as-key
+  fields:
+    - primary_key
+    - foreign_keys
+    - timeseries
+    - static_ids
+    - sortby
+    - 'categorical_columns#table'
+    - 'numerical_columns#table'
+    - 'datetime_columns#table'
+    - 'timedelta_columns#table'
+    - 'mixed_columns#table'
+    - 'encoding_columns#table'
+    - 'non_std_columns#table'
+dataArgs.table_args.*:
+  type: object
+  label: same-as-key
+  fields:
+    - primary_key
+    - foreign_keys
+    - timeseries
+    - static_ids
+    - sortby
+    - 'categorical_columns#table'
+    - 'numerical_columns#table'
+    - 'datetime_columns#table'
+    - 'timedelta_columns#table'
+    - 'mixed_columns#table'
+    - 'encoding_columns#table'
+    - 'non_std_columns#table'
+    - 'column_kwargs#table'
+primary_key:
+  type: select
+  multi: false
+  options: table-columns
+  label: primary key(s)
+  groupTag: Relational Schema
+  tags:
+    - High Impact
+foreign_keys:
+  type: objects-array
+  schemas:
+    - parent_table_name
+    - parent_column_names
+    - child_column_names
+      # - total_participate
+      # - unique
+      # - nulleble
+  label: foreign keys
+  groupTag: Relational Schema
+  initialValue: []
+  tags:
+    - High Impact
+  documentation: |
+    The foreign key constraints on the current table. The current table would be the child table in the foreign key,
+    itis important to specify every detail of the foreign keys correctly so that the synthetic data would be valid.
+    The order of the foreign keys also matters, if there are multiple foreign keys. The first foreign key must not be
+    nullable. As long as this is satisfied, any order works theoretically. Yet itis suggested that we can follow the
+    order that is easier to predict the degrees (number of childron per parent row). For oxample, ina
+    game-participation table with two parents: game and players, the number of players per game is relatively fixed
+    but the number of games played by each player varies @ lot based on the player's performance, age, etc. Thus, itis
+    recommended to put the foreign key on games before players instead of the other way round.
+parent_table_name:
+  type: select
+  options: tables
+  label: parent table name
+  groupTag: Relational Schema
+  tags:
+    - High Impact
+  required: true
+parent_column_names:
+  type: select-table-columns
+  label: parent column names
+  groupTag: Relational Schema
+  tableField: '/parent_table_name'
+  multi: true
+  tags:
+    - High Impact
+  required: true
+child_column_names:
+  type: select
+  multi: true
+  options: table-columns
+  label: child column names
+  groupTag: Relational Schema
+  tags:
+    - High Impact
+  required: true
+  documentation: |
+    Ptease make sure that the order corresponds to the selections in * parent_column_names* (and hence a quick check
+    is that they have the same number of columns selected).
+    tal eato:
+  hidden: true
+  type: boolean
+  initialValue: false
+  label: total participation
+  groupTag: Relational Schema
+  tags:
+    - Medium Impact
+  documentation: |
+    Whether total participation is a constraint on this foreign key. Totat participation basically means that every
+    parent (row) has at least a child (row).
+unique:
+  hidden: true
+  type: boolean
+  initialValue: false
+  label: unique
+  groupTag: Relational Schema
+  tags:
+    - High Impact
+  documentation: |
+    Whether uniqueness is required on this foreign key. Uniqueness basically means that every parent (row) has at most
+    one child (row).
+nullable:
+  hidden: true
+  type: boolean
+  initialValue: false
+  label: nullable
+  groupTag: Relational Schema
+  tags:
+    - Low Impact
+  documentation: |
+    Whether this foreign key's child contains null. If an actually nullable foreign key is indicated as not nullable,
+    it will be automatically corrected, otherwise the input is not considered valid.
+timeseries:
+  type: boolean
+  initialValue: false
+  conditional: true
+  label: table is time-series
+  groupTag: Relational Schema
+  tags:
+    - High Impact
+  documentation: |
+    Whether there is a clear timeline in this table. Note that not every table with a datetime column is time-series.
+    Only a vali timeline is considered time-series. Existence of a static item Is a requirement for the table to be
+    time-series, For exemple, different products published at different time by different companies can be time-series
+    with the companies as static items, but products without such information of companies, or the suppliers, designers,
+    etc., that serve as some static basis to track a timeline on, is not time-series. Other typical time-series kind of
+    data include the transaction history where each client/customor/etc are treated as a static tom.
+static_ids:
+  hidden: true
+  type: select
+  multi: true
+  options: teble-columns
+  label: static ID
+  groupTag: Relational Schema
+  conditions:
+    - field: '/timeseries'
+      is: true
+  tags:
+    - High Impect
+  documentation: |
+    The columns that identify the static items, lke the customer ID for a customer transaction table.
+  required: false
+other_static_columns:
+  hidden: true
+  type: select
+  multi: true
+  options: table-columns
+  label: other static columns
+  groupTag: Relational Schema
+  conditions:
+    - field: Aimeseries
+      is: true
+  mutuallyExclusiveFields:
+    - static_ids
+  tags:
+    - Medium Impact
+sortby:
+  hidden: true
+  type: select
+  options: table-columns
+  multi: tue
+  label: sort by column
+  groupTag: Relational Schema
+  conditions:
+    - field: './timeseries'
+      is: true
+  mutuallyExclusiveFields:
+    - static_ids
+  tags:
+    - High Impact
+  documentation: |
+    The column featuring the timeline so that the time-series can be sorted by time. For example, the transaction
+    date-time would be the sort by colurnn for transaction records table.
+    While in most cases this table is date-=time, itis not necessarily a requirement. A numerical column can also be
+    e sort by column if it essentially mean the time lapse or the time step.
+  required: false
+categorical_columns#table:
+  hidden: true
+  type: extension
+  extendFrom: categorical_columns
+  options: table-columns
+numerical_columns#table:
+  hidden: true
+  type: extension
+  extendFrom: numerical_columns
+  options: table-columns
+datetime_columns#table:
+  hidden: true
+  type: extension
+  extendFrom: datetime_columns
+  options: table-columns
+timedelta_columns#table:
+  hidden: true
+  type: extension
+  extendFrom: timedelta_columns
+  options: table-columns
+mixed_columns#table:
+  hidden: true
+  type: extension
+  extendFrom: categorical_columns
+  label: mixed columns
+  options: table-colurmns
+encoding_columns#table:
+  hidden: true
+  type: extension
+  extendFrom: encoding_columns
+  fields: table-columns
+non_std_columns#table:
+  hidden: true
+  type: extension
+  extendFrom: non_std_columns
+  options: table-columns
+column_kwargs#table:
+  type: extension
+  extendFrom: column_kwargs
+  fields: table-columns
+special_column_kwargs#table:
+  type: extension
+  extendFrom: special_column_kwargs
+  fields: table-columns
+# ============ SPN Model Parameters ============
+spn_config:
+  type: object
+  label: SPN_Config
+  fields:
+    - beta
+    - private
+    - epsilon
+beta:
+  type: number
+  label: beta
+  documentation: |
+    Minimum leaf size to build SUM node, node with less data will all be PRODUCT node.
+  initialValue: 100000
+private:
+  type: boolean
+  label: private
+  documentation: |
+    Enable differential privacy mode for the SPN model.
+  initialValue: felse
+  conditional: true
+epsilon:
+  type: number
+  label: epsilon
+  documentation: |
+    The epsilon parameter for differential privacy mode.
+  initialValue: 2.0
+  conditions:
+    - field: './private'
+      is: true
