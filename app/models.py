@@ -1,6 +1,6 @@
 """Persistence model.
 
-Mirrors the object hierarchy visible in the Betterdata screenshots:
+Mirrors the object hierarchy visible in the vendor screenshots:
 Organization > Project > (DataSource, Configuration) > Model > Job.
 """
 
@@ -119,7 +119,7 @@ class ModelArtifact(Base):
     artifact_path: Mapped[str] = mapped_column(Text, default="")
     status: Mapped[str] = mapped_column(String(32), default="Pending")
     stats: Mapped[dict] = mapped_column(JSON, default=dict)
-    created_by: Mapped[str] = mapped_column(String(255), default="Betterdata Admin")
+    created_by: Mapped[str] = mapped_column(String(255), default="DataCraft Admin")
     created_at: Mapped[datetime] = mapped_column(DateTime, server_default=func.now())
 
 
@@ -207,7 +207,7 @@ class AuditLog(Base):
     __tablename__ = "audit_logs"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
-    actor: Mapped[str] = mapped_column(String(255), default="Betterdata Admin")
+    actor: Mapped[str] = mapped_column(String(255), default="DataCraft Admin")
     action: Mapped[str] = mapped_column(String(64))
     entity_type: Mapped[str] = mapped_column(String(64))
     entity_id: Mapped[str] = mapped_column(String(64), default="")

@@ -643,6 +643,7 @@ class ConfigurationCreate(BaseModel):
 
 class ConfigurationUpdate(BaseModel):
     name: str | None = None
+    model_type: str | None = None
     selected_tables: list[str] | None = None
     data_args: dict[str, Any] | None = None
     training_params: dict[str, Any] | None = None
@@ -697,7 +698,12 @@ def create_configuration(
         vcpu=vcpu,
         ram_gb=ram,
         gpu=gpu,
-        training_params={"spn_config": {"beta": 100000, "private": False, "epsilon": 2.0}},
+        training_params={
+            "spn_config": {"beta": 100000, "private": False, "epsilon": 2.0},
+            # An engine named in the request was chosen; one that came from the
+            # field default was not. Auto-configure overrides only the latter.
+            "engine_pinned": "model_type" in payload.model_fields_set,
+        },
         target_connection={"need_parquet": True, "connection": "MinIO: Internal-Source-Connection"},
     )
     db.add(configuration)
@@ -737,6 +743,23 @@ def update_configuration(
     configuration = db.get(Configuration, configuration_id)
     if configuration is None:
         raise HTTPException(404, "configuration not found")
+
+    if payload.model_type:
+        # Same gate as creation: a disabled engine cannot be selected here
+        # either, or the licence position could be bypassed with a PATCH.
+        model_type = db.scalar(
+            select(ModelType).where(ModelType.name == payload.model_type)
+        )
+        if model_type is None or not model_type.enabled:
+            raise HTTPException(
+                400,
+                f"model type '{payload.model_type}' is not enabled. "
+                f"{model_type.licence_note if model_type else ''}",
+            )
+        # Record that the engine was chosen, so Auto-configure leaves it alone.
+        params = dict(configuration.training_params or {})
+        params["engine_pinned"] = True
+        configuration.training_params = params
 
     changed: dict[str, Any] = {}
     for field_name, value in payload.model_dump(exclude_unset=True).items():
@@ -1016,10 +1039,15 @@ def autoconfigure(
         configuration.training_params = params
         db.commit()
 
-    # Pick the engine from the shape of the data. The user can still change it;
-    # the training report records which engine was recommended and why.
+    # Pick the engine from the shape of the data -- unless the user has chosen
+    # one. The old condition overwrote any value that differed from the
+    # recommendation, which is exactly the case where the choice was deliberate:
+    # selecting ARF on a relational dataset and then running Auto-configure put
+    # it silently back to SPN. The recommendation is still returned, so the UI
+    # can show that the two disagree.
     recommended, rationale = recommend_engine(detected)
-    if not configuration.model_type or configuration.model_type != recommended:
+    pinned = bool((configuration.training_params or {}).get("engine_pinned"))
+    if not configuration.model_type or not pinned:
         configuration.model_type = recommended
         db.commit()
 

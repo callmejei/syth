@@ -1,7 +1,7 @@
 """Maps Atlas classifications onto synthesis strategy.
 
-This is the piece the vendor product does not have. Betterdata decides how to
-treat a column by looking at the data; here the decision is driven by the
+This is the piece a bought product does not have. A vendor synthesiser decides
+how to treat a column by looking at the data; here the decision is driven by the
 classification your governance team already curated in Atlas, and every
 decision is recorded with the tag that caused it.
 
@@ -109,12 +109,18 @@ class TablePolicy:
         """Surrogate generator per column, from its classification."""
         styles: dict[str, str] = {}
         for decision in self.decisions:
+            # Only a curated tag may pick a vocabulary generator. Inference is a
+            # guess -- any run of 7-15 digits satisfies the phone pattern, so a
+            # 10-digit account number was being reissued as "+60xxxxxxxxx" -- and
+            # a guess must not decide what a value looks like. Guessed columns
+            # are still protected; they fall through to the shape-preserving
+            # generator, which reproduces the real format whatever it is.
+            if decision.inferred:
+                continue
             for tag in decision.classifications:
-                # Inference records its guesses as "INFERRED:NAME" so they can
-                # never be mistaken for a curated tag; the shape it implies is
-                # the same either way.
-                bare = tag.split(":", 1)[-1].strip().upper()
-                style = self._STYLE_FOR_TAG.get(bare)
+                if tag.strip().upper().startswith("INFERRED"):
+                    continue
+                style = self._STYLE_FOR_TAG.get(tag.strip().upper())
                 if style:
                     styles[decision.column] = style
                     break

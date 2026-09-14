@@ -551,19 +551,27 @@ class TableEncoder:
                     spec.max_value = spec.min_value + 1e-9
             elif kind == NON_STD:
                 spec.placeholder_prefix = f"{name}_"
-                # What the column is beats what it is called: a classification
-                # (or an explicit setting) wins over the name-substring hint.
-                spec.placeholder_style = placeholder_styles.get(
-                    name
-                ) or _placeholder_style_for(name)
-                if spec.placeholder_style == "token":
-                    # No name hint (account numbers, reference codes, internal
-                    # keys). Learn the format from the values instead of
-                    # falling back to a counter.
+                # Order of authority: an explicit setting, then a curated
+                # catalog tag, then the column's own values, and only then the
+                # spelling of its name.
+                #
+                # The values outrank the name deliberately. A column called
+                # "mobile" holding "+65 9xxxxxxx" was being reissued by the
+                # built-in phone generator as "+60xxxxxxxxx" -- a different
+                # country, in a different format, from a column whose real
+                # format was sitting right there. A learned shape cannot be
+                # wrong about the data in that way.
+                declared = placeholder_styles.get(name)
+                if declared:
+                    spec.placeholder_style = declared
+                else:
                     masks = _learn_masks(series)
                     if masks:
                         spec.placeholder_masks = masks
                         spec.placeholder_style = "mask"
+                    else:
+                        # Nothing readable to learn from (an all-null column).
+                        spec.placeholder_style = _placeholder_style_for(name)
 
             specs.append(spec)
         return cls(specs)

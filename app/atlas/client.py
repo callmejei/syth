@@ -1,9 +1,9 @@
 """Apache Atlas client.
 
-Betterdata infers what a column *is* from the data. You already know, because
-Atlas holds the classifications your governance team curated. This client pulls
-those classifications so the synthesiser can be driven by declared sensitivity
-rather than by guesswork.
+A synthesiser can only infer what a column *is* from the data. You already
+know, because Atlas holds the classifications your governance team curated.
+This client pulls those classifications so the synthesiser can be driven by
+declared sensitivity rather than by guesswork.
 
 Falls back to a local fixture when Atlas is unreachable, so the POC demos while
 the (slow) Atlas container warms up. The fallback is always reported in
