@@ -117,7 +117,138 @@ def _make_placeholders(spec: ColumnSpec, count: int, seed: int = 0) -> list[str]
             f"{rng.integers(1, 999)} {rng.choice(_FAKE_STREET)}, {rng.integers(10000, 99999)}"
             for _ in range(count)
         ]
+    if style == "mask" and spec.placeholder_masks:
+        return _make_masked(spec, count, rng)
+
     return [f"{spec.placeholder_prefix}{i}" for i in range(count)]
+
+
+# Positions whose observed alphabet is a single character are reproduced
+# literally. That is what carries a fixed prefix ("ACC...") and a leading zero
+# across to the synthetic value, and it is deliberate: the format is the part we
+# are preserving. It is the same trade-off the NRIC style makes by hardcoding
+# YYMMDD-PB-NNNN, except measured instead of assumed.
+_MASK_CLASSES = ((str.isdigit, "D"), (str.isupper, "A"), (str.islower, "a"))
+_UPPER = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+_LOWER = "abcdefghijklmnopqrstuvwxyz"
+
+
+def _mask_of(value: str) -> str:
+    out = []
+    for ch in value:
+        for test, symbol in _MASK_CLASSES:
+            if test(ch):
+                out.append(symbol)
+                break
+        else:
+            out.append(ch)
+    return "".join(out)
+
+
+def _learn_masks(series: Any, sample_size: int = 2000) -> list[dict[str, Any]]:
+    """Describe a column's surface format: which characters occur where.
+
+    Returns one entry per distinct mask, each holding the observed alphabet at
+    every position. Generating from it preserves length, character classes, any
+    constant prefix, and -- because a position that never held "0" cannot draw
+    one -- the digit width of a numeric identifier once it is cast back to int.
+    """
+    try:
+        import pandas as pd  # noqa: F401
+
+        sample = series.dropna().astype(str).head(sample_size)
+    except Exception:  # noqa: BLE001
+        return []
+    sample = [v for v in sample.tolist() if v]
+    if not sample:
+        return []
+
+    # An identifier is short. Anything longer is free text or a description,
+    # where "format" is just sentence shape -- reproducing it position by
+    # position would recombine the source's own words into something that reads
+    # like a real value. Those keep the counter.
+    if float(np.median([len(v) for v in sample])) > 24:
+        return []
+
+    by_mask: dict[str, list[str]] = {}
+    for value in sample:
+        by_mask.setdefault(_mask_of(value), []).append(value)
+
+    # A column with a mask per row is free text, not an identifier format;
+    # there is nothing to preserve and the alphabets would be near-constant.
+    if len(by_mask) > max(8, len(sample) // 20):
+        return []
+
+    masks: list[dict[str, Any]] = []
+    for mask, values in by_mask.items():
+        alphabets = []
+        for index, symbol in enumerate(mask):
+            if symbol not in ("D", "A", "a"):
+                alphabets.append(symbol)
+                continue
+            # Positions that vary get the full character class, not just the
+            # characters seen there: a wider draw both enlarges the space the
+            # value is drawn from and avoids copying the source's own alphabet
+            # back out. A digit position that never held "0" keeps that
+            # constraint, which is what preserves the width of an integer id.
+            observed = {v[index] for v in values}
+            if len(observed) == 1:
+                alphabets.append("".join(observed))
+                continue
+            full = {"D": "0123456789", "A": _UPPER, "a": _LOWER}[symbol]
+            if symbol == "D" and "0" not in observed:
+                full = full[1:]
+            alphabets.append(full)
+        masks.append({"weight": len(values) / len(sample), "alphabets": alphabets})
+    masks.sort(key=lambda m: -m["weight"])
+    return masks
+
+
+def _make_masked(spec: ColumnSpec, count: int, rng) -> list[str]:
+    masks = spec.placeholder_masks
+    weights = np.array([m["weight"] for m in masks], dtype=float)
+    weights = weights / weights.sum()
+
+    seen: set[str] = set()
+    values: list[str] = []
+    for _ in range(count):
+        alphabets = masks[int(rng.choice(len(masks), p=weights))]["alphabets"]
+        # Identifiers are normally unique, so retry on a collision rather than
+        # emitting a duplicate. A narrow format can exhaust its space; give up
+        # after a bounded number of tries instead of looping forever.
+        for _attempt in range(20):
+            candidate = "".join(
+                alphabet
+                if len(alphabet) == 1
+                else alphabet[int(rng.integers(0, len(alphabet)))]
+                for alphabet in alphabets
+            )
+            if candidate not in seen:
+                break
+        seen.add(candidate)
+        values.append(candidate)
+    return values
+
+
+def _restore_placeholder_dtype(spec: "ColumnSpec", values: list[str]) -> Any:
+    """Put a placeholder back in the source column's type.
+
+    A protected int column (an account number) must still be an int in the
+    output, or anything loading the synthetic CSV against the real schema fails
+    on that column alone. Only integer dtypes are restored: a float or datetime
+    identifier is not a format we generate, and a silent cast there would be a
+    guess rather than a restoration.
+    """
+    import pandas as pd
+
+    dtype = (spec.dtype_str or "").lower()
+    if dtype.startswith(("int", "uint")) and all(v.isdigit() for v in values):
+        try:
+            return pd.Series(values, dtype="int64")
+        except (ValueError, OverflowError):
+            # Wider than int64 -- keep the digits as text rather than lose them.
+            return values
+    return values
 
 
 @dataclass
@@ -137,6 +268,11 @@ class ColumnSpec:
     # still parse it, while the value itself carries no real information.
     placeholder_prefix: str = ""
     placeholder_style: str = "token"
+    # Surface format of the source column, learned when no name hint applies:
+    # one entry per distinct mask, each with the observed alphabet per position.
+    # Without it an account number came back as "account_number_0" -- a string
+    # where the source was an int, of the wrong width, in row order.
+    placeholder_masks: list[dict[str, Any]] = field(default_factory=list)
     # "declared" when the range/categories came from the catalog or config,
     # "data" when they were measured from the training rows. Under DP only
     # "declared" gives an unconditional guarantee.
@@ -176,6 +312,7 @@ class ColumnSpec:
             "datetime_format": self.datetime_format,
             "placeholder_prefix": self.placeholder_prefix,
             "placeholder_style": self.placeholder_style,
+            "placeholder_masks": self.placeholder_masks,
             "other_values": [_jsonable(v) for v in self.other_values],
             "domain_source": self.domain_source,
             "transform": self.transform,
@@ -197,6 +334,7 @@ class ColumnSpec:
             datetime_format=blob.get("datetime_format"),
             placeholder_prefix=blob.get("placeholder_prefix", ""),
             placeholder_style=blob.get("placeholder_style", "token"),
+            placeholder_masks=blob.get("placeholder_masks", []),
             other_values=blob.get("other_values", []),
             domain_source=blob.get("domain_source", "data"),
             transform=blob.get("transform", "none"),
@@ -399,6 +537,14 @@ class TableEncoder:
             elif kind == NON_STD:
                 spec.placeholder_prefix = f"{name}_"
                 spec.placeholder_style = _placeholder_style_for(name)
+                if spec.placeholder_style == "token":
+                    # No name hint (account numbers, reference codes, internal
+                    # keys). Learn the format from the values instead of
+                    # falling back to a counter.
+                    masks = _learn_masks(series)
+                    if masks:
+                        spec.placeholder_masks = masks
+                        spec.placeholder_style = "mask"
 
             specs.append(spec)
         return cls(specs)
@@ -457,9 +603,10 @@ class TableEncoder:
                         values.append(None)
                 data[spec.name] = values
             elif spec.kind == NON_STD:
-                data[spec.name] = _make_placeholders(
+                values = _make_placeholders(
                     spec, matrix.shape[0], seed=stable_seed(spec.name, "placeholder")
                 )
+                data[spec.name] = _restore_placeholder_dtype(spec, values)
             elif spec.kind == DATETIME:
                 seconds = np.where(np.isnan(column), np.nan, column)
                 # Snap back onto the source's grid: day-aligned data must stay
