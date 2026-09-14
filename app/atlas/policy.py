@@ -29,6 +29,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from app.atlas.client import AtlasResult, ColumnClassification
+from app.atlas.inference import Inference, infer_column
 
 SUPPRESS = "SUPPRESS"
 PSEUDONYM = "PSEUDONYM"
@@ -49,6 +50,10 @@ class ColumnDecision:
     reason: str
     classifications: list[str] = field(default_factory=list)
     encoder_kind: str | None = None  # override passed to the TableEncoder
+    # True when the strategy came from name/value inference rather than from a
+    # curated catalog tag. Surfaced everywhere, so a policy resting on guesses
+    # is never mistaken for one resting on your catalog.
+    inferred: bool = False
 
     def to_json(self) -> dict[str, Any]:
         return {
@@ -57,6 +62,7 @@ class ColumnDecision:
             "reason": self.reason,
             "classifications": self.classifications,
             "encoder_kind": self.encoder_kind,
+            "inferred": self.inferred,
         }
 
 
@@ -81,6 +87,11 @@ class TablePolicy:
     def requires_dp(self) -> bool:
         return any(d.strategy == MODEL_DP for d in self.decisions)
 
+    @property
+    def inferred(self) -> list[str]:
+        """Columns protected by inference rather than by a curated tag."""
+        return [d.column for d in self.decisions if d.inferred]
+
     def encoder_overrides(self) -> dict[str, str]:
         return {
             d.column: d.encoder_kind
@@ -95,6 +106,7 @@ class TablePolicy:
             "suppressed": self.suppressed,
             "pseudonymised": self.pseudonymised,
             "generalised": self.generalised,
+            "inferred": self.inferred,
             "requires_dp": self.requires_dp,
         }
 
@@ -111,6 +123,7 @@ class PolicyResult:
         return any(t.requires_dp for t in self.tables.values())
 
     def summary(self) -> dict[str, Any]:
+        inferred = sum(len(t.inferred) for t in self.tables.values())
         return {
             "source": self.source,
             "detail": self.detail,
@@ -121,6 +134,10 @@ class PolicyResult:
                 len(t.pseudonymised) for t in self.tables.values()
             ),
             "generalised_total": sum(len(t.generalised) for t in self.tables.values()),
+            # How much of this policy rests on guesses rather than on the
+            # catalog. A reviewer needs this number before quoting any other.
+            "inferred_total": inferred,
+            "catalog_backed": inferred == 0,
         }
 
     def to_json(self) -> dict[str, Any]:
@@ -137,8 +154,14 @@ def decide_column(
     table_has_sensitive: bool,
     mode: str,
     is_key: bool = False,
+    inference: Inference | None = None,
 ) -> ColumnDecision:
-    """Choose a strategy for one column."""
+    """Choose a strategy for one column.
+
+    A curated classification always wins. `inference` is consulted only when the
+    catalog has nothing to say, and never forces differential privacy -- see
+    app/atlas/inference.py for why.
+    """
     tags = classification.classifications if classification else []
 
     if is_key:
@@ -152,6 +175,23 @@ def decide_column(
         )
 
     if classification is None or not classification.is_classified:
+        # The catalog is silent. Before falling through to MODEL, check whether
+        # the column looks like something that must not be modelled raw. This is
+        # the floor that stops an untagged `full_name` being learned as a
+        # categorical and re-emitted verbatim.
+        if inference is not None and mode != PERMISSIVE:
+            return ColumnDecision(
+                column=column_name,
+                strategy=PSEUDONYM,
+                reason=(
+                    f"NOT IN CATALOG -- protected by inference: {inference.reason}. "
+                    "Tag this column PII in Atlas to make the decision authoritative."
+                ),
+                classifications=inference.tags,
+                encoder_kind="non_std",
+                inferred=True,
+            )
+
         if mode == STRICT and table_has_sensitive:
             return ColumnDecision(
                 column=column_name,
@@ -162,7 +202,9 @@ def decide_column(
                 ),
                 classifications=[],
                 encoder_kind="non_std",
+                inferred=True,
             )
+
         return ColumnDecision(
             column=column_name,
             strategy=MODEL,
@@ -230,14 +272,21 @@ def build_policy(
     table_columns: dict[str, list[str]],
     keys_by_table: dict[str, set[str]] | None = None,
     mode: str = BALANCED,
+    frames: dict[str, Any] | None = None,
 ) -> PolicyResult:
-    """Produce a decision for every column of every selected table."""
+    """Produce a decision for every column of every selected table.
+
+    `frames` is optional and only improves inference: with the data in hand, a
+    column whose name reveals nothing can still be caught by its values.
+    """
     keys_by_table = keys_by_table or {}
+    frames = frames or {}
     tables: dict[str, TablePolicy] = {}
 
     for table_name, columns in table_columns.items():
         table_classification = atlas.tables.get(table_name)
         column_map = table_classification.columns if table_classification else {}
+        frame = frames.get(table_name)
 
         table_has_sensitive = any(
             c.is_direct_identifier or c.is_pci or c.is_sensitive
@@ -245,14 +294,26 @@ def build_policy(
         )
 
         policy = TablePolicy(table=table_name)
+        keys = keys_by_table.get(table_name, set())
         for column_name in columns:
+            existing = column_map.get(column_name)
+            inference = None
+            # Only bother inferring where the catalog is silent, and never for a
+            # key -- keys are minted fresh and never modelled anyway.
+            if column_name not in keys and (existing is None or not existing.is_classified):
+                series = None
+                if frame is not None and column_name in getattr(frame, "columns", []):
+                    series = frame[column_name]
+                inference = infer_column(column_name, series)
+
             policy.decisions.append(
                 decide_column(
-                    column_map.get(column_name),
+                    existing,
                     column_name,
                     table_has_sensitive=table_has_sensitive,
                     mode=mode,
-                    is_key=column_name in keys_by_table.get(table_name, set()),
+                    is_key=column_name in keys,
+                    inference=inference,
                 )
             )
         tables[table_name] = policy

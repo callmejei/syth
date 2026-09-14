@@ -45,7 +45,12 @@ async function request(path, options = {}) {
     } catch {
       detail = await response.text()
     }
-    throw new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+    const error = new Error(typeof detail === 'string' ? detail : JSON.stringify(detail))
+    // Callers need the status to tell a refusal they can offer a way around
+    // (409: the catalog does not cover these tables) from a plain failure.
+    error.status = response.status
+    error.detail = detail
+    throw error
   }
   if (response.status === 204) return null
   return response.json()
@@ -86,7 +91,12 @@ export const api = {
     request('/configurations', { method: 'POST', body: JSON.stringify(body) }),
   updateConfiguration: (id, body) =>
     request(`/configurations/${id}`, { method: 'PATCH', body: JSON.stringify(body) }),
-  autoconfigure: (id) => request(`/configurations/${id}/autoconfigure`, { method: 'POST' }),
+  // requireCatalog=false derives the schema from the data alone, for tables the
+  // catalog does not cover. The response flags that it was not catalog-backed.
+  autoconfigure: (id, { requireCatalog = true } = {}) =>
+    request(`/configurations/${id}/autoconfigure?require_catalog=${requireCatalog}`, {
+      method: 'POST',
+    }),
   train: (id, body) =>
     request(`/configurations/${id}/train`, { method: 'POST', body: JSON.stringify(body) }),
 

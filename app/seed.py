@@ -9,14 +9,20 @@ from app.models import ComputeNode, ComputeProfile, ModelType, Organization, Org
 
 DEFAULT_ORG = "Default Synthforge Organization"
 
-# Model types page. SPN is the only engine we implement; the rest are listed as
-# disabled so the roadmap is visible in the product, and so the reason SDV-based
-# engines were rejected is recorded where someone will actually read it.
+# Model types page. Two engines are implemented, one per kind of dataset:
+# the SPN for related tables, ARF for standalone ones. Auto-configure detects
+# which a dataset is and selects accordingly. The rest are listed as disabled so
+# the roadmap is visible in the product, and so the reason SDV-based engines were
+# rejected is recorded where someone will actually read it.
 MODEL_TYPES = [
     {
         "name": "SPN",
         "code": "SPN",
-        "description": "Sum-Product Network. Our own implementation; no third-party licence.",
+        "description": (
+            "Sum-Product Network. The engine for RELATED tables: children are "
+            "sampled conditioned on their parent, so foreign keys and "
+            "cardinality survive. The only engine offering differential privacy."
+        ),
         "enabled": True,
         "show_progress": True,
         "quick_train": True,
@@ -29,14 +35,18 @@ MODEL_TYPES = [
     {
         "name": "ARF",
         "code": "ARF",
-        "description": "Adversarial Random Forest. Best for single wide tables.",
+        "description": (
+            "Adversarial Random Forest. The engine for INDEPENDENT tables with "
+            "no foreign keys: built for interactions inside a single wide table, "
+            "and it reports its own convergence."
+        ),
         "enabled": True,
         "show_progress": True,
         "quick_train": False,
         "default_gpu": False,
         "parquet_dataset": True,
         "is_beta": True,
-        "multi_table": True,
+        "multi_table": False,
         "licence_note": (
             "Apache-2.0 clean: implemented in-house on scikit-learn. NOTE: no "
             "differential privacy -- the engine learns split thresholds, not "

@@ -283,12 +283,13 @@ def build_report(
         if stats.get("warning"):
             warnings.append(f"{name}: {stats['warning']}")
     for name, table in tables.items():
-        if table["protected_columns_leaked"]:
-            warnings.append(
-                f"{name}: protected columns reproduced real values "
-                f"({', '.join(table['protected_columns_leaked'])}). "
-                "Investigate before releasing this dataset."
-            )
+        # Overlap on a protected column is recorded per column above, but it is
+        # not warned about here: any overlap at all used to raise the alarm, and
+        # on a name column drawn from a surrogate vocabulary that fires on every
+        # run for common names. app/synth/integrity.py judges the same evidence
+        # against the column's own uniqueness -- near-unique values like a
+        # national ID fail on any reuse, vocabulary values do not -- and emits
+        # the warning. One authority, so the report cannot contradict itself.
         if table["scored_columns"] == 0:
             warnings.append(
                 f"{name}: no columns were eligible for fidelity scoring "

@@ -6,6 +6,50 @@ import { RefreshIcon, TrashIcon, UploadIcon } from '../components/icons'
 import DownloadMenu from '../components/DownloadMenu'
 import ConfirmDelete from '../components/ConfirmDelete'
 
+/** How this dataset's classifications were resolved.
+ *
+ *  The raw source name is not enough on its own. Resolution falls back
+ *  Atlas -> imported catalog -> bundled fixture, and the fixture only contains
+ *  the demo tables, so an uploaded dataset of your own reports "fixture" while
+ *  actually carrying no classifications at all. Showing that word unqualified
+ *  reads as "these tables were classified", which is the opposite of the truth.
+ */
+function classificationLabel(row) {
+  const source = row.atlas_source
+  const classified = row.atlas_tables_classified || 0
+  const total = row.table_count || 0
+
+  if (source === 'atlas') {
+    return {
+      text: `Atlas · ${classified}/${total}`,
+      className: 'bg-success-subtle text-success-text',
+      title: 'Read live from Apache Atlas.',
+    }
+  }
+  if (source === 'local-catalog') {
+    return {
+      text: `Your catalog · ${classified}/${total}`,
+      className: 'bg-success-subtle text-success-text',
+      title: 'Classifications you imported from your own catalog export.',
+    }
+  }
+  if (!classified) {
+    return {
+      text: 'Not catalogued',
+      className: 'bg-danger-subtle text-danger-text',
+      title:
+        'No classifications exist for these tables. Protection falls back to ' +
+        'name and value inference. Import your catalog to govern this properly.',
+    }
+  }
+  return {
+    text: `Sample tags · ${classified}/${total}`,
+    className: 'bg-warning-subtle text-warning-text',
+    title:
+      'Using the bundled demo fixture — illustrative sample tags, not your catalog.',
+  }
+}
+
 function UploadModal({ onClose, onDone }) {
   const [name, setName] = useState('')
   const [projectId, setProjectId] = useState('')
@@ -212,18 +256,15 @@ export default function DataSources() {
             },
             {
               key: 'atlas_source',
-              label: 'Atlas',
-              render: (row) => (
-                <span
-                  className={`pill ${
-                    row.atlas_source === 'atlas'
-                      ? 'bg-success-subtle text-success-text'
-                      : 'bg-warning-subtle text-warning-text'
-                  }`}
-                >
-                  {row.atlas_source || 'none'}
-                </span>
-              ),
+              label: 'Classifications',
+              render: (row) => {
+                const label = classificationLabel(row)
+                return (
+                  <span className={`pill ${label.className}`} title={label.title}>
+                    {label.text}
+                  </span>
+                )
+              },
             },
             {
               key: 'used_by',

@@ -142,13 +142,83 @@ class TableClassification:
 @dataclass
 class AtlasResult:
     tables: dict[str, TableClassification]
-    source: str  # "atlas" | "fixture" | "empty"
+    source: str  # "atlas" | "local-catalog" | "fixture" | "empty"
     detail: str = ""
+
+    # Sources that represent a real, curated catalog. The bundled fixture does
+    # not: it is illustrative sample data and must never stand in for one.
+    TRUSTED_SOURCES = ("atlas", "local-catalog")
+
+    @property
+    def is_trusted(self) -> bool:
+        return self.source in self.TRUSTED_SOURCES
+
+    def coverage(
+        self, table_names: list[str], table_columns: dict[str, list[str]] | None = None
+    ) -> dict[str, Any]:
+        """What the catalog actually knows about these tables.
+
+        A lookup that returns nothing is not the same as a lookup that returns
+        "unclassified", and the difference matters: the first means nobody has
+        catalogued this table, the second means somebody looked. Resolution
+        falls back silently so generation can proceed, so anything that claims to
+        configure *from the catalog* has to ask this question explicitly.
+        """
+        table_columns = table_columns or {}
+        present, missing, ungoverned = [], [], []
+        classified_counts: dict[str, int] = {}
+        unclassified: dict[str, list[str]] = {}
+
+        for name in table_names:
+            table = self.tables.get(name)
+            if table is None:
+                missing.append(name)
+                continue
+            classified = [
+                column
+                for column, entry in table.columns.items()
+                if entry.is_classified
+            ]
+            classified_counts[name] = len(classified)
+            if not classified:
+                # The entity exists but carries no classification at all.
+                ungoverned.append(name)
+                continue
+            present.append(name)
+            known = set(table.columns)
+            declared = table_columns.get(name) or []
+            gaps = [
+                column
+                for column in declared
+                if column not in known or not table.columns[column].is_classified
+            ]
+            if gaps:
+                unclassified[name] = gaps
+
+        return {
+            "source": self.source,
+            "trusted_source": self.is_trusted,
+            "detail": self.detail,
+            "tables_requested": list(table_names),
+            "tables_classified": present,
+            "tables_missing": missing,
+            "tables_ungoverned": ungoverned,
+            "columns_classified": classified_counts,
+            "columns_unclassified": unclassified,
+            # Complete means every requested table carries at least one
+            # classification. Per-column gaps are reported, not fatal: real
+            # catalogs have them, and policy mode decides how to treat them.
+            #
+            # An empty request is not complete. Vacuous truth here would report
+            # full catalog coverage for a selection that matched no table at all.
+            "complete": bool(table_names) and not missing and not ungoverned,
+        }
 
     def to_json(self) -> dict[str, Any]:
         return {
             "source": self.source,
             "detail": self.detail,
+            "trusted_source": self.is_trusted,
             "tables": {k: v.to_json() for k, v in self.tables.items()},
         }
 

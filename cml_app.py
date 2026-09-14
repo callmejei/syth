@@ -10,8 +10,18 @@ foreground.
 """
 
 import os
+import sys
+from pathlib import Path
 
 import uvicorn
+
+# CML launches Application scripts through its own wrapper, so the directory
+# holding this file is not reliably on sys.path the way `python cml_app.py`
+# would put it there. Without this, `app.main` fails to import when the project
+# root is above this folder.
+ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 if __name__ == "__main__":
     port = int(os.environ.get("CDSW_APP_PORT", "8100"))

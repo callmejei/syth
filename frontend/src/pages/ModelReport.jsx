@@ -4,11 +4,28 @@ import api from '../api'
 import { Banner, Metric, PageHeader, Section, Spinner, Table } from '../components/ui'
 import DownloadMenu from '../components/DownloadMenu'
 
-function GeneratePanel({ modelId, tables }) {
+/** The table at the top of the hierarchy: one that is nobody's child.
+ *
+ *  Sizing the dataset means choosing how many of THESE to generate; every other
+ *  table follows from its parent's behaviour. Picking the first table in the
+ *  list instead is how a request for N accounts -- a child -- scaled the degree
+ *  model by 150x and produced 199,925 accounts and 1.5M transactions from 1,000
+ *  customers.
+ */
+function rootTableOf(tables, schema) {
+  const children = new Set(
+    (schema?.detected?.foreign_keys || []).map((fk) => fk.child_table),
+  )
+  return tables.find((t) => !children.has(t)) || tables[0]
+}
+
+function GeneratePanel({ modelId, tables, schema, sourceRows }) {
+  const [matchSource, setMatchSource] = useState(true)
   const [rows, setRows] = useState(2000)
   const [job, setJob] = useState(null)
   const [preview, setPreview] = useState(null)
-  const rootTable = tables[0]
+  const rootTable = rootTableOf(tables, schema)
+  const sourceTotal = Object.values(sourceRows || {}).reduce((a, b) => a + b, 0)
 
   useEffect(() => {
     if (!job || ['COMPLETED', 'FAILED'].includes(job.status)) return
@@ -25,7 +42,8 @@ function GeneratePanel({ modelId, tables }) {
   async function start() {
     const started = await api.generate({
       model_id: modelId,
-      n_rows: { [rootTable]: Number(rows) },
+      // Omitting n_rows reproduces the source dataset's row counts exactly.
+      n_rows: matchSource ? null : { [rootTable]: Number(rows) },
       seed: 42,
     })
     setJob({ id: started.job_id, status: 'QUEUED', progress: 0 })
@@ -34,20 +52,45 @@ function GeneratePanel({ modelId, tables }) {
 
   return (
     <Section title="Generate synthetic data">
-      <div className="mb-4 flex items-end gap-3">
-        <div>
-          <div className="label">Rows for {rootTable}</div>
+      <div className="mb-4">
+        <label className="flex cursor-pointer items-start gap-2">
           <input
-            type="number"
-            className="input mt-1 w-40"
-            value={rows}
-            onChange={(event) => setRows(event.target.value)}
+            type="checkbox"
+            className="mt-0.5"
+            checked={matchSource}
+            onChange={(event) => setMatchSource(event.target.checked)}
           />
-          <p className="mt-1 text-xs text-fg-subtle">
-            Child tables scale automatically from the learned cardinality.
-          </p>
-        </div>
-        <button className="btn-primary" onClick={start} type="button">
+          <span>
+            <span className="label">Match the source dataset</span>
+            <span className="mt-0.5 block max-w-xl text-xs text-fg-subtle">
+              Every table gets exactly the row count it was trained on
+              {sourceTotal ? ` (${sourceTotal.toLocaleString()} rows in total)` : ''}. Without
+              this, only {rootTable} is pinned and the child tables are drawn from their
+              learned cardinality, so totals land near the source without matching it.
+            </span>
+          </span>
+        </label>
+
+        {!matchSource && (
+          <div className="mt-3 flex items-end gap-3">
+            <div>
+              <div className="label">Rows for {rootTable}</div>
+              <input
+                type="number"
+                className="input mt-1 w-40"
+                value={rows}
+                onChange={(event) => setRows(event.target.value)}
+              />
+              <p className="mt-1 max-w-md text-xs text-fg-subtle">
+                {rootTable} is the top of the hierarchy, so this sizes the whole dataset.
+                Every other table follows from it — ask for half the {rootTable} and you
+                get roughly half of everything.
+              </p>
+            </div>
+          </div>
+        )}
+
+        <button className="btn-primary mt-3" onClick={start} type="button">
           Generate
         </button>
       </div>
@@ -275,7 +318,22 @@ export default function ModelReport() {
 
       {report.utility?.available && <UtilityPanel utility={report.utility} />}
 
-      {tables.length > 0 && <GeneratePanel modelId={id} tables={tables} />}
+      {tables.length > 0 && (
+        <GeneratePanel
+          modelId={id}
+          tables={tables}
+          schema={report.schema}
+          // train_stats.rows is the true source row count. real_rows is the
+          // capped sample the fidelity comparison scored against, which is
+          // smaller and would understate the dataset here.
+          sourceRows={Object.fromEntries(
+            Object.entries(report.tables || {}).map(([name, t]) => [
+              name,
+              t.train_stats?.rows ?? t.real_rows,
+            ]),
+          )}
+        />
+      )}
 
       {Object.entries(report.tables || {}).map(([name, table]) => (
         <Section

@@ -132,6 +132,7 @@ def _train(job_id: str) -> dict:
             engine=engine_name,
             policy_mode=params.get("policy_mode", "balanced"),
             enforce_policy=params.get("enforce_policy", True),
+            allow_schema_errors=params.get("allow_schema_errors", False),
             progress=lambda p, m: _log(job_id, m, p),
         )
 
@@ -212,7 +213,8 @@ def _generate(job_id: str) -> dict:
         output_dir = storage_for("synthetic", job_id)
         result = run_generation(
             artifact_path=artifact_path,
-            n_rows=params.get("n_rows") or 1000,
+            # None -> match the source dataset's row counts.
+            n_rows=params.get("n_rows"),
             output_dir=output_dir,
             seed=int(params.get("seed", 0)),
             fmt=params.get("format", "parquet"),

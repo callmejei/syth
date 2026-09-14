@@ -17,7 +17,9 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.atlas.client import AtlasClient, reset_health_cache
+from app.atlas.inference import infer_column
 from app.atlas.policy import build_policy
+from app.synth.schema_infer import infer_schema, recommend_engine, validate_schema
 from app.config import settings
 from app.core.schema_loader import DatasetContext, load_registry, reload_registry
 from app.synth.preprocess import infer_column_kind
@@ -136,13 +138,22 @@ def _derive_column_domains(
         # description of the exact observed extremes.
         #
         # Do NOT slam the lower bound to zero just because the column is
-        # non-negative. The declared range is what the DP histogram spans, and
-        # a range far wider than the data wastes almost every bin on values
-        # that never occur -- noise then fills those bins and the model emits
-        # them. An income column of 10k-2M declared as [0, 2M] puts the real
-        # data in the top few bins and generates incomes below 1.
+        # non-negative. The declared range is what the histogram spans, and a
+        # range far wider than the data wastes almost every bin on values that
+        # never occur -- noise then fills those bins and the model emits them.
+        #
+        # The lower bound is therefore padded proportionally to the VALUE, not
+        # to the span. Padding by a fraction of the span is what broke this:
+        # on a loan column of 3.5k-1M, 5% of the span is ~50k against a minimum
+        # of 3,578, so the bound collapsed to zero and the generator produced
+        # loans of S$0.01 where the real first percentile is S$8,466.
         span = max(high - low, 1e-9)
-        low_bound = max(low - 0.05 * span, 0.0) if low >= 0 else low - 0.1 * span
+        if low > 0:
+            low_bound = low * 0.95
+        elif low == 0:
+            low_bound = 0.0
+        else:
+            low_bound = low - 0.1 * span
         high_bound = high + 0.05 * span
         entry: dict[str, Any] = {"min_val": low_bound, "max_val": high_bound}
 
@@ -329,6 +340,14 @@ def list_data_sources(db: Session = Depends(get_db)) -> list[dict[str, Any]]:
             "table_count": len((s.tables or {}).get("tables", [])),
             "row_count": sum(t.get("rows", 0) for t in (s.tables or {}).get("tables", [])),
             "atlas_source": (s.atlas_metadata or {}).get("source"),
+            # How many of this dataset's tables the resolved source actually had
+            # something to say about. The source name alone is misleading: a
+            # fallback to the bundled fixture reports "fixture" whether it
+            # covered every table or, as is usual for a dataset that is not the
+            # bundled demo, none of them.
+            "atlas_tables_classified": len(
+                ((s.atlas_metadata or {}).get("tables") or {})
+            ),
             "project_id": s.project_id,
             "used_by": used_by.get(s.id, []),
             "created_at": s.created_at.isoformat() if s.created_at else None,
@@ -589,7 +608,21 @@ def data_source_policy(
         t["name"]: [c["name"] for c in t.get("columns", [])] for t in tables
     }
     atlas = AtlasClient().classify_tables(list(table_columns))
-    policy = build_policy(atlas, table_columns, mode=mode)
+    # Read the data so the preview matches what training will actually do: keys
+    # are excluded from inference, and untagged columns are recognised by name
+    # or value rather than falling through to MODEL.
+    frames = {
+        name: _read_table(source.storage_path, name) for name in table_columns
+    }
+    frames = {k: v for k, v in frames.items() if v is not None}
+    detected = infer_schema(frames)
+    policy = build_policy(
+        atlas,
+        table_columns,
+        keys_by_table={t: detected.key_columns_of(t) for t in table_columns},
+        mode=mode,
+        frames=frames,
+    )
     return policy.to_json()
 
 
@@ -721,12 +754,80 @@ def update_configuration(
     return {"id": configuration.id, "updated": list(changed)}
 
 
+def _catalog_gap_message(atlas: AtlasClient, coverage: dict[str, Any]) -> str:
+    """Explain which tables the catalog does not cover, and what to do next.
+
+    Returned as a readable string rather than a structured payload because it is
+    rendered straight into a banner in the UI.
+    """
+    missing = coverage["tables_missing"]
+    ungoverned = coverage["tables_ungoverned"]
+    known = coverage["tables_classified"]
+
+    lines: list[str] = []
+    if not settings.atlas_enabled:
+        lines.append(
+            "Apache Atlas is not enabled for this deployment (ATLAS_ENABLED=false), "
+            "so there is no catalog to configure from."
+        )
+    elif coverage["source"] not in ("atlas",):
+        lines.append(
+            f"Apache Atlas returned nothing usable ({coverage['detail'] or 'no detail'})."
+        )
+
+    if missing:
+        lines.append(
+            f"Not catalogued at all: {', '.join(sorted(missing))}. "
+            "No entity for these tables was found."
+        )
+    if ungoverned:
+        lines.append(
+            f"Catalogued but carrying no classifications: {', '.join(sorted(ungoverned))}. "
+            "The entity exists, but no column has been tagged."
+        )
+    if known:
+        lines.append(f"Already classified, and usable: {', '.join(sorted(known))}.")
+
+    if coverage["source"] == "fixture":
+        lines.append(
+            "The only classifications available are the bundled demo fixture, which "
+            "is ILLUSTRATIVE sample data and must not be used to govern your tables."
+        )
+
+    lines.append(
+        "To fix this, either tag these tables in Atlas, or export your "
+        "classifications once and import them with "
+        "scripts/import_classifications.py (an Atlas export or a "
+        "table,column,classifications spreadsheet both work) -- no connectivity "
+        "needed. Otherwise configure the Relational Schema by hand, or re-run "
+        "Auto-configure with require_catalog=false to derive it from the data "
+        "alone, in which case the policy rests on profiling and inference rather "
+        "than on your catalog."
+    )
+    return " ".join(lines)
+
+
 @router.post("/configurations/{configuration_id}/autoconfigure")
-def autoconfigure(configuration_id: str, db: Session = Depends(get_db)) -> dict[str, Any]:
+def autoconfigure(
+    configuration_id: str,
+    require_catalog: bool = True,
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
     """Populate the Relational Schema and column types from Atlas + profiling.
 
     This is the step that makes the catalog integration pay off: instead of
     hand-filling the Data Arguments tree for every table, we derive it.
+
+    It is called "Auto-configure from Atlas", so by default it refuses to run
+    when Atlas has nothing to say about the selected tables. Classification
+    lookup falls back silently -- to an imported catalog, then to the bundled
+    demo fixture -- which is right for generation (a run should not die because
+    the catalog is down) and wrong here: a schema derived entirely from profiling
+    would be presented as one derived from the catalog, and nobody downstream
+    could tell the difference.
+
+    Pass require_catalog=false to derive it from the data anyway. The response
+    then says so explicitly.
     """
     configuration = db.get(Configuration, configuration_id)
     if configuration is None:
@@ -736,54 +837,51 @@ def autoconfigure(configuration_id: str, db: Session = Depends(get_db)) -> dict[
         raise HTTPException(400, "configuration has no data source")
 
     tables = (source.tables or {}).get("tables", [])
-    selected = set(configuration.selected_tables or [t["name"] for t in tables])
+    available = [t["name"] for t in tables]
+    selected = set(configuration.selected_tables or available)
     tables = [t for t in tables if t["name"] in selected]
+
+    if not tables:
+        raise HTTPException(
+            400,
+            f"none of the selected tables exist in this data source. "
+            f"Selected: {', '.join(sorted(selected)) or '(none)'}. "
+            f"Available: {', '.join(available) or '(none)'}.",
+        )
 
     atlas = AtlasClient().classify_tables([t["name"] for t in tables])
 
     table_args: dict[str, Any] = {}
     by_name = {t["name"]: t for t in tables}
 
-    # Primary keys: prefer an Atlas IDENTIFIER, else a unique column whose name
-    # looks like a key.
-    primary_keys: dict[str, str] = {}
-    for table in tables:
-        name = table["name"]
-        columns = table.get("columns", [])
-        classification = atlas.tables.get(name)
-        candidates = []
-        for column in columns:
-            column_name = column["name"]
-            is_unique = column.get("unique", 0) >= table.get("rows", 0) > 0
-            tagged = False
-            if classification and column_name in classification.columns:
-                tagged = "IDENTIFIER" in [
-                    c.upper() for c in classification.columns[column_name].classifications
-                ]
-            looks_like_key = column_name.lower().endswith(("_id", "id")) or column_name.lower() in {
-                "cif", "key"
-            }
-            if is_unique and (tagged or looks_like_key):
-                candidates.append(column_name)
-        if candidates:
-            primary_keys[name] = candidates[0]
+    coverage = atlas.coverage(
+        list(by_name),
+        {t["name"]: [c["name"] for c in t.get("columns", [])] for t in tables},
+    )
+    if require_catalog and not coverage["complete"]:
+        raise HTTPException(409, _catalog_gap_message(atlas, coverage))
 
-    # Foreign keys: a column that matches another table's primary key by name.
+    # Keys come from the data, not from column names alone. A key must actually
+    # be unique and non-null, and a foreign key is only accepted once its values
+    # are found in the parent -- which is what stops a shared column like
+    # customer_id being taken for the primary key of every table that carries it.
+    all_frames = {
+        name: _read_table(source.storage_path, name) for name in by_name
+    }
+    all_frames = {k: v for k, v in all_frames.items() if v is not None}
+    detected = infer_schema(all_frames)
+    primary_keys: dict[str, str] = dict(detected.primary_keys)
+
     for table in tables:
         name = table["name"]
-        columns = [c["name"] for c in table.get("columns", [])]
-        foreign_keys = []
-        for other_name, other_key in primary_keys.items():
-            if other_name == name:
-                continue
-            if other_key in columns and primary_keys.get(name) != other_key:
-                foreign_keys.append(
-                    {
-                        "parent_table_name": other_name,
-                        "parent_column_names": [other_key],
-                        "child_column_names": [other_key],
-                    }
-                )
+        foreign_keys = [
+            {
+                "parent_table_name": fk.parent_table,
+                "parent_column_names": [fk.parent_column],
+                "child_column_names": [fk.child_column],
+            }
+            for fk in detected.foreign_keys_of(name)
+        ]
 
         # Column typing.
         #
@@ -795,7 +893,8 @@ def autoconfigure(configuration_id: str, db: Session = Depends(get_db)) -> dict[
         # ("Date_of_Birth_0"). One inference implementation, used everywhere.
         categorical, numerical, datetime_columns, timedelta_columns, non_std = [], [], [], [], []
         classification = atlas.tables.get(name)
-        frame = _read_table(source.storage_path, name)
+        frame = all_frames.get(name)
+        key_columns = detected.key_columns_of(name)
 
         for column in table.get("columns", []):
             column_name = column["name"]
@@ -808,6 +907,16 @@ def autoconfigure(configuration_id: str, db: Session = Depends(get_db)) -> dict[
             ):
                 non_std.append(column_name)
                 continue
+
+            # The catalog may not have been told about this table. Fall back to
+            # recognising the column, so an untagged full_name is typed as a
+            # placeholder here rather than being learned as a categorical.
+            if column_classification is None or not column_classification.is_classified:
+                if column_name not in key_columns:
+                    series = frame[column_name] if frame is not None and column_name in frame.columns else None
+                    if infer_column(column_name, series) is not None:
+                        non_std.append(column_name)
+                        continue
 
             kind = None
             if frame is not None and column_name in frame.columns:
@@ -907,12 +1016,33 @@ def autoconfigure(configuration_id: str, db: Session = Depends(get_db)) -> dict[
         configuration.training_params = params
         db.commit()
 
+    # Pick the engine from the shape of the data. The user can still change it;
+    # the training report records which engine was recommended and why.
+    recommended, rationale = recommend_engine(detected)
+    if not configuration.model_type or configuration.model_type != recommended:
+        configuration.model_type = recommended
+        db.commit()
+
+    # Confirm the schema we just wrote actually validates, so Auto-configure can
+    # never hand back a configuration that training will reject.
+    issues = validate_schema(table_args, all_frames, detected)
+
     return {
         "atlas_source": atlas.source,
         "atlas_detail": atlas.detail,
         "order": order,
         "table_args": table_args,
         "beta": beta,
+        "engine": recommended,
+        "engine_rationale": rationale,
+        "detected_schema": detected.to_json(),
+        "schema_issues": [i.to_json() for i in issues],
+        # Where this configuration actually came from. Without it a schema
+        # derived purely by profiling is indistinguishable from one the
+        # governance team curated.
+        "catalog_coverage": coverage,
+        "derived_from_catalog": coverage["complete"] and atlas.is_trusted,
+        "requires_review": not (coverage["complete"] and atlas.is_trusted),
     }
 
 
@@ -926,11 +1056,17 @@ class TrainRequest(BaseModel):
     policy_mode: str = "balanced"
     enforce_policy: bool = True
     compute_profile: str = "LOW"
+    # Escape hatch for a schema the validator rejects. The run proceeds, and the
+    # report records that the schema was known-invalid.
+    allow_schema_errors: bool = False
 
 
 class GenerateRequest(BaseModel):
     model_id: str
-    n_rows: dict[str, int] | int = 1000
+    # None means "same shape as the source dataset", which is the default a
+    # synthetic copy should have. Give a dict to size specific tables, or an int
+    # to size the root table and let children follow.
+    n_rows: dict[str, int] | int | None = None
     seed: int = 0
     format: str = "parquet"
     compute_profile: str = "LOW"
@@ -947,6 +1083,34 @@ def start_training(
         raise HTTPException(400, "configuration has no data source")
     if not configuration.selected_tables:
         raise HTTPException(400, "configuration has no selected tables")
+
+    # Validate the relational schema up front. Training a model on a schema the
+    # data contradicts wastes the run and, worse, produces a model whose
+    # per-column scores look healthy while every join is broken.
+    if not payload.allow_schema_errors:
+        source = db.get(DataSource, configuration.data_source_id)
+        frames = {
+            name: _read_table(source.storage_path, name)
+            for name in configuration.selected_tables
+        }
+        frames = {k: v for k, v in frames.items() if v is not None}
+        if frames:
+            issues = validate_schema(
+                (configuration.data_args or {}).get("table_args") or {}, frames
+            )
+            blocking = [i for i in issues if i.level == "error"]
+            if blocking:
+                raise HTTPException(
+                    400,
+                    {
+                        "message": (
+                            f"the relational schema is not valid for this data "
+                            f"({len(blocking)} blocking issue(s)). Run Auto-configure to "
+                            "derive it, or set allow_schema_errors to train anyway."
+                        ),
+                        "issues": [i.to_json() for i in blocking],
+                    },
+                )
 
     job = Job(
         org_id=configuration.org_id,

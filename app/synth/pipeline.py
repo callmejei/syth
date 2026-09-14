@@ -16,7 +16,11 @@ from app.config import settings
 from app.synth.engines import config_key, get_engine
 from app.synth.evaluate import evaluate_tables
 from app.synth.relational import ForeignKeySpec, RelationalSPN, TableSpec, topological_order
+from app.synth.integrity import FAIL as INTEGRITY_FAIL
+from app.synth.integrity import check_generation
 from app.synth.report import build_report
+from app.synth.schema_infer import ERROR as SCHEMA_ERROR
+from app.synth.schema_infer import infer_schema, recommend_engine, validate_schema
 from app.synth.spn import SPNParams
 
 logger = logging.getLogger(__name__)
@@ -90,6 +94,10 @@ def resolve_policy(
         {name: list(frame.columns) for name, frame in frames.items()},
         keys_by_table=keys_by_table,
         mode=mode,
+        # With the data in hand, a column the catalog has never been told about
+        # can still be recognised from its name or its values, so an untagged
+        # full_name is not modelled raw.
+        frames=frames,
     )
 
 
@@ -105,6 +113,7 @@ def run_training(
     enforce_policy: bool = True,
     evaluate_utility: bool = True,
     holdout_fraction: float = 0.25,
+    allow_schema_errors: bool = False,
     progress: Progress = _noop,
 ) -> dict[str, Any]:
     progress(0.02, "Loading source tables")
@@ -113,6 +122,25 @@ def run_training(
     specs = specs_from_config(data_args, table_names)
     order = (data_args or {}).get("order") or topological_order(specs)
     order = [t for t in order if t in frames] or list(frames)
+
+    # Validate the declared schema against the data before spending anything on
+    # training. A primary key that is not unique, or a relational dataset with no
+    # foreign keys declared, cannot produce correct output -- and per-column
+    # fidelity will not reveal it afterwards.
+    progress(0.05, "Validating relational schema")
+    inferred_schema = infer_schema(frames)
+    schema_issues = validate_schema(
+        (data_args or {}).get("table_args") or {}, frames, inferred_schema
+    )
+    blocking = [i for i in schema_issues if i.level == SCHEMA_ERROR]
+    if blocking and not allow_schema_errors:
+        lines = "\n".join(f"  - {i.table}: {i.message}\n    fix: {i.fix}" for i in blocking)
+        raise ValueError(
+            f"the relational schema is not valid for this data "
+            f"({len(blocking)} blocking issue(s)):\n{lines}"
+        )
+
+    recommended_engine, engine_rationale = recommend_engine(inferred_schema)
 
     progress(0.10, "Resolving Apache Atlas classifications")
     policy = resolve_policy(frames, specs, mode=policy_mode)
@@ -242,10 +270,55 @@ def run_training(
         "name": table_engine.name,
         "supports_dp": table_engine.supports_dp,
         "description": table_engine.description,
+        "recommended": recommended_engine,
+        "recommendation_rationale": engine_rationale,
         "diagnostics": {
             name: getattr(m, "diagnostics", {}) for name, m in model.models.items()
         },
     }
+    if table_engine.name != recommended_engine:
+        report.setdefault("warnings", []).append(
+            f"{table_engine.name} was used, but this dataset suits {recommended_engine}: "
+            f"{engine_rationale}"
+        )
+
+    # What the declared schema looked like, and what the data says it is. Kept in
+    # the report because a model is only as trustworthy as the schema it was
+    # trained under, and a reviewer cannot see the configuration from here.
+    report["schema"] = {
+        "declared_valid": not blocking,
+        "issues": [i.to_json() for i in schema_issues],
+        "detected": inferred_schema.to_json(),
+    }
+    for issue in schema_issues:
+        if issue.level != SCHEMA_ERROR:
+            report.setdefault("warnings", []).append(
+                f"schema ({issue.table}): {issue.message}"
+            )
+
+    # Structural and disclosure checks. These catch what a per-column fidelity
+    # score cannot: broken joins, collapsed cardinality, and protected values
+    # reaching the output.
+    progress(0.92, "Checking relational integrity and disclosure")
+    integrity = check_generation(
+        reference, preview, schema=inferred_schema, policy=policy_json
+    )
+    report["integrity"] = integrity.to_json()
+    for check in integrity.failed:
+        report.setdefault("warnings", []).append(f"FAILED: {check.name} -- {check.detail}")
+    for check in integrity.warned:
+        report.setdefault("warnings", []).append(f"{check.name} -- {check.detail}")
+
+    # The headline status. A good fidelity score must not be able to present a
+    # structurally broken dataset as a healthy one.
+    report["status"] = integrity.status
+    if integrity.status == INTEGRITY_FAIL:
+        report.setdefault("warnings", []).insert(
+            0,
+            f"This model FAILED {len(integrity.failed)} integrity check(s). The "
+            "fidelity score below is per-column and does not reflect them; do not "
+            "quote it without reading the integrity section.",
+        )
 
     # Utility evaluation: train a second model on the training split only, so
     # the held-out real rows are genuinely unseen. The shipped artifact stays
@@ -268,6 +341,8 @@ def run_training(
         "report": report,
         "train_stats": model.train_stats,
         "dp_forced": dp_forced,
+        "status": report["status"],
+        "schema": report["schema"],
         # Serialise whatever the chosen engine's parameter object holds. Naming
         # the SPN's fields explicitly here meant an ARF run died on
         # `params.epsilon` after training had already succeeded.
@@ -275,10 +350,19 @@ def run_training(
     }
 
 
+def source_row_counts(model: RelationalSPN) -> dict[str, int]:
+    """How many rows each table had in the data the model was trained on."""
+    return {
+        name: int(stats["rows"])
+        for name, stats in (model.train_stats or {}).items()
+        if isinstance(stats, dict) and stats.get("rows")
+    }
+
+
 def run_generation(
     *,
     artifact_path: str,
-    n_rows: dict[str, int] | int,
+    n_rows: dict[str, int] | int | None = None,
     output_dir: str,
     seed: int = 0,
     fmt: str = "parquet",
@@ -286,6 +370,20 @@ def run_generation(
 ) -> dict[str, Any]:
     progress(0.05, "Loading model artifact")
     model = RelationalSPN.load(artifact_path)
+
+    # Default: reproduce the source dataset's shape exactly, table for table.
+    #
+    # Only the root table is otherwise pinned; every child is drawn from its
+    # degree model, so totals land near the source count without hitting it
+    # (20,000 real transactions came out anywhere between 19,501 and 20,656
+    # across eight seeds). Pinning each table to the count it was trained on
+    # removes that drift, and it is safe precisely because those counts are what
+    # the model already produces on average -- the rescale factor is ~1.0, not
+    # the 150x that distorts cardinality when a child is given an arbitrary size.
+    matched_source = False
+    if n_rows is None:
+        n_rows = source_row_counts(model)
+        matched_source = bool(n_rows)
 
     def generation_progress(fraction: float, message: str) -> None:
         progress(0.05 + fraction * 0.8, message)
@@ -313,8 +411,41 @@ def run_generation(
             }
         )
 
+    # Sizing a CHILD table directly scales its degree distribution, which
+    # silently breaks the ratio to its parent and cascades into its own
+    # children. Asking for 200,000 accounts against 1,000 customers once
+    # produced 200 accounts per customer and 1.5M transactions, and nothing
+    # said so. Compare what came out against the cardinality the model learned.
+    warnings: list[str] = []
+    for child, by_parent in (model.degrees or {}).items():
+        child_frame = synth.get(child)
+        if child_frame is None or not len(child_frame):
+            continue
+        for parent, degree_model in (by_parent or {}).items():
+            parent_frame = synth.get(parent)
+            if parent_frame is None or not len(parent_frame):
+                continue
+            values = getattr(degree_model, "values", None)
+            probs = getattr(degree_model, "probs", None)
+            if not values or not probs:
+                continue
+            learned = float(sum(v * p for v, p in zip(values, probs)))
+            actual = len(child_frame) / len(parent_frame)
+            if learned > 0 and (actual / learned > 1.5 or actual / learned < 0.67):
+                warnings.append(
+                    f"{child} came out at {actual:.2f} rows per {parent}, but the model "
+                    f"learned {learned:.2f}. Sizing a child table directly rescales its "
+                    f"cardinality -- set the row count on the root table instead."
+                )
+            break  # only the primary parent
+
     progress(1.0, "Generation complete")
-    return {"output_dir": str(out), "files": files}
+    return {
+        "output_dir": str(out),
+        "files": files,
+        "warnings": warnings,
+        "matched_source": matched_source,
+    }
 
 
 def _split_holdout(

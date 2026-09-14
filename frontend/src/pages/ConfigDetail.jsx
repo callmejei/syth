@@ -19,6 +19,9 @@ export default function ConfigDetail() {
   const [message, setMessage] = useState(null)
   const [busy, setBusy] = useState(false)
   const [job, setJob] = useState(null)
+  // Set when Auto-configure refused because the catalog does not cover these
+  // tables, so the fallback can be offered instead of a dead end.
+  const [catalogGap, setCatalogGap] = useState(false)
 
   const load = useCallback(async () => {
     const configuration = await api.configuration(id)
@@ -68,16 +71,45 @@ export default function ConfigDetail() {
     }
   }
 
-  async function autoconfigure() {
+  async function autoconfigure({ requireCatalog = true } = {}) {
     setBusy(true)
+    setCatalogGap(false)
     try {
-      const result = await api.autoconfigure(id)
-      setMessage({
-        tone: 'success',
-        text: `Derived schema from Atlas (${result.atlas_source}). Order: ${result.order.join(' → ')}`,
-      })
+      const result = await api.autoconfigure(id, { requireCatalog })
+      // Say which source this actually came from. "Derived from Atlas" when the
+      // catalog knew nothing about these tables is the misreading this screen
+      // has to prevent.
+      const engine = `Engine: ${result.engine}.`
+      const order = `Order: ${result.order.join(' → ')}`
+      if (result.derived_from_catalog) {
+        setMessage({
+          tone: 'success',
+          text: `Derived from your catalog (${result.atlas_source}). ${engine} ${order}`,
+        })
+      } else {
+        const coverage = result.catalog_coverage || {}
+        const missing = [
+          ...(coverage.tables_missing || []),
+          ...(coverage.tables_ungoverned || []),
+        ]
+        // Two different situations, and conflating them would misdescribe the
+        // governance position: either nothing knows about these tables, or the
+        // only tags available are the bundled illustrative ones.
+        const why = missing.length
+          ? `These tables are not in the catalog (${missing.join(', ')}), so keys come ` +
+            `from profiling and protection from name and value inference.`
+          : `The only classifications available are the bundled demo fixture, which is ` +
+            `ILLUSTRATIVE sample data rather than your catalog.`
+        setMessage({
+          tone: 'warn',
+          text: `Not derived from your catalog. ${why} Review the Governance screen before releasing anything. ${engine} ${order}`,
+        })
+      }
       await load()
     } catch (error) {
+      // 409 means the catalog does not cover these tables. That is recoverable,
+      // so offer the fallback rather than leaving a dead end.
+      if (error.status === 409) setCatalogGap(true)
       setMessage({ tone: 'danger', text: error.message })
     } finally {
       setBusy(false)
@@ -123,7 +155,12 @@ export default function ConfigDetail() {
           </div>
         </div>
         <div className="flex gap-2">
-          <button className="btn-ghost" onClick={autoconfigure} disabled={busy} type="button">
+          <button
+            className="btn-ghost"
+            onClick={() => autoconfigure()}
+            disabled={busy}
+            type="button"
+          >
             <ShieldIcon size={16} />
             Auto-configure from Atlas
           </button>
@@ -138,6 +175,24 @@ export default function ConfigDetail() {
       </div>
 
       {message && <Banner tone={message.tone}>{message.text}</Banner>}
+
+      {catalogGap && (
+        <Banner tone="warn" title="No catalog entry for these tables">
+          <div className="mb-3">
+            Import your classifications to govern this dataset properly, or derive the
+            schema from the data alone. Derived that way, keys come from profiling and
+            protection from name and value inference, and every report will say so.
+          </div>
+          <button
+            className="btn-ghost"
+            onClick={() => autoconfigure({ requireCatalog: false })}
+            disabled={busy}
+            type="button"
+          >
+            Configure from the data instead
+          </button>
+        </Banner>
+      )}
 
       {job && (
         <Banner tone={job.status === 'FAILED' ? 'danger' : 'info'} title={`Job ${job.status}`}>

@@ -532,6 +532,18 @@ class RelationalSPN:
             spec = self.specs.get(table_name) or TableSpec(name=table_name)
             parent_fks = [fk for fk in spec.foreign_keys if fk.parent_table_name in out]
 
+            # Condition on the most specific parent available. A loan payment
+            # belongs to a loan, which belongs to a customer; generating it
+            # against the customer instead leaves its loan_id to be drawn at
+            # random, so the payment's loan and its customer disagree. Later in
+            # the topological order means deeper in the hierarchy, so the last
+            # parent is the immediate one.
+            if len(parent_fks) > 1:
+                depth = {name: index for index, name in enumerate(self.order)}
+                parent_fks.sort(
+                    key=lambda fk: depth.get(fk.parent_table_name, -1), reverse=True
+                )
+
             if not parent_fks:
                 count = _resolve_count(n_rows, table_name, default=1000)
                 frame, degrees_out = self._sample_rows(table_name, count, rng)
@@ -559,7 +571,12 @@ class RelationalSPN:
             )
 
             total = int(degrees.sum())
-            requested = _resolve_count(n_rows, table_name, default=None)
+            # Only an explicit per-table count pins a child table. A scalar
+            # n_rows means "this many root rows"; the children that implies come
+            # from the degree model, so asking for 1,200 customers yields the
+            # ~12.85 transactions each that the real data carries rather than
+            # 1,200 transactions in total.
+            requested = n_rows.get(table_name) if isinstance(n_rows, dict) else None
             if requested is not None and total > 0:
                 # Scale to the requested row count while keeping the shape of
                 # the degree distribution.
@@ -568,6 +585,26 @@ class RelationalSPN:
                     (degrees * scale).round().astype(int),
                     0,
                 )
+                total = int(degrees.sum())
+
+                # Scaling alone cannot land on an exact count: degrees are small
+                # integers, so a parent with 1 child scaled by 1.26 rounds back
+                # to 1 and the total barely moves (1,500 requested came out as
+                # 1,243). Close the remainder one child at a time, spread over
+                # random parents so the distribution's shape survives.
+                shortfall = int(requested) - total
+                if shortfall > 0:
+                    picks = rng.integers(0, len(degrees), size=shortfall)
+                    np.add.at(degrees, picks, 1)
+                elif shortfall < 0:
+                    remaining = -shortfall
+                    while remaining > 0:
+                        givers = np.flatnonzero(degrees > 0)
+                        if not len(givers):
+                            break
+                        take = min(remaining, len(givers))
+                        degrees[rng.choice(givers, size=take, replace=False)] -= 1
+                        remaining -= take
                 total = int(degrees.sum())
 
             # Repeat each synthetic parent row by its degree, so every child row
@@ -590,11 +627,35 @@ class RelationalSPN:
                 if position_in_key < repeated.shape[1]:
                     frame[child_column] = repeated[:, position_in_key]
 
-            # Secondary foreign keys: sample uniformly from the parent's keys.
+            # Secondary foreign keys.
+            #
+            # Banking extracts are routinely denormalised: a transaction carries
+            # both account_id and customer_id, and a loan payment carries both
+            # loan_id and customer_id. Those paths are not independent -- the
+            # customer on the transaction IS the owner of its account -- so
+            # sampling the second key independently produces a row whose two
+            # joins name different people. It resolves (no orphan) and is still
+            # wrong, which is the worst kind of wrong.
+            #
+            # So whenever the primary parent already carries the column, inherit
+            # it from the parent row this child belongs to. Only a genuinely
+            # independent relationship falls back to sampling.
             for fk in parent_fks[1:]:
                 other_parent = out[fk.parent_table_name]
                 if other_parent.empty:
                     continue
+
+                inherited = [
+                    column
+                    for column in fk.child_column_names
+                    if column in parent_frame.columns
+                ]
+                if len(inherited) == len(fk.child_column_names):
+                    bridged = parent_frame[inherited].to_numpy()[parent_row_index]
+                    for position_in_key, child_column in enumerate(fk.child_column_names):
+                        frame[child_column] = bridged[:, position_in_key]
+                    continue
+
                 picks = rng.integers(0, len(other_parent), size=len(frame))
                 values = other_parent[fk.parent_column_names].to_numpy()[picks]
                 for position_in_key, child_column in enumerate(fk.child_column_names):
