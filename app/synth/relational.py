@@ -98,6 +98,10 @@ class TableSpec:
     static_ids: list[str] = field(default_factory=list)
     sortby: list[str] = field(default_factory=list)
     column_kind_overrides: dict[str, str] = field(default_factory=dict)
+    # Surrogate generator per placeholder column, e.g. {"cfna1": "name"}. Set
+    # from the column's classification, or declared in the configuration for a
+    # column whose name says nothing about what it holds.
+    placeholder_styles: dict[str, str] = field(default_factory=dict)
     # Public column domains: {"balance": {"min": 0, "max": 1e6},
     #                         "segment": {"categories": [...]}}
     declared_domain: dict[str, dict[str, Any]] = field(default_factory=dict)
@@ -124,6 +128,10 @@ class TableSpec:
             static_ids=_as_list(blob.get("static_ids")),
             sortby=_as_list(blob.get("sortby")),
             column_kind_overrides=_kind_overrides(blob),
+            placeholder_styles={
+                str(k): str(v)
+                for k, v in (blob.get("placeholder_styles") or {}).items()
+            },
             max_degree=int(blob.get("max_degree") or MAX_DEGREE),
             aggregation_args=dict(blob or {}),
         )
@@ -446,6 +454,7 @@ class RelationalSPN:
             encoder = TableEncoder.fit(
                 training_frame,
                 overrides=spec.column_kind_overrides,
+                placeholder_styles=spec.placeholder_styles,
                 declared_domain={**spec.declared_domain, **context_domain},
                 apply_declared_transform=private,
             )

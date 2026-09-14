@@ -176,6 +176,13 @@ def run_training(
             table_policy = policy.tables.get(name)
             if table_policy:
                 spec.column_kind_overrides.update(table_policy.encoder_overrides())
+                # The configuration is the last word: a catalog that tags a
+                # column only `PII` cannot say whether it holds a name or an
+                # account number, so an explicit setting must survive.
+                spec.placeholder_styles = {
+                    **table_policy.placeholder_styles(),
+                    **spec.placeholder_styles,
+                }
     else:
         working = frames
 

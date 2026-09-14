@@ -163,28 +163,37 @@ def _learn_masks(series: Any, sample_size: int = 2000) -> list[dict[str, Any]]:
     if not sample:
         return []
 
-    # An identifier is short. Anything longer is free text or a description,
-    # where "format" is just sentence shape -- reproducing it position by
-    # position would recombine the source's own words into something that reads
-    # like a real value. Those keep the counter.
-    if float(np.median([len(v) for v in sample])) > 24:
-        return []
-
     by_mask: dict[str, list[str]] = {}
     for value in sample:
         by_mask.setdefault(_mask_of(value), []).append(value)
 
-    # A column with a mask per row is free text, not an identifier format;
-    # there is nothing to preserve and the alphabets would be near-constant.
-    if len(by_mask) > max(8, len(sample) // 20):
-        return []
+    # Two regimes, and the difference is what may be copied literally.
+    #
+    # A REGULAR column (few distinct masks: ACC0000000, a 10-digit account) has
+    # a genuine format. A position that never varies is part of that format --
+    # the "ACC" prefix, a leading zero -- and is reproduced.
+    #
+    # An IRREGULAR column (a name, an address, free text) has no format, only a
+    # shape. Copying its constant positions would copy the source's own
+    # characters back out, so nothing is held fixed except separators: every
+    # letter and digit is redrawn from its full class. That is the enterprise
+    # default -- random characters in the shape of the original -- and it does
+    # not care what the column is called.
+    regular = len(by_mask) <= max(8, len(sample) // 20)
 
     masks: list[dict[str, Any]] = []
     for mask, values in by_mask.items():
         alphabets = []
         for index, symbol in enumerate(mask):
             if symbol not in ("D", "A", "a"):
+                # Separators and punctuation are structure, not content: a name
+                # keeps its space, an email its "@".
                 alphabets.append(symbol)
+                continue
+            if not regular:
+                alphabets.append(
+                    {"D": "0123456789", "A": _UPPER, "a": _LOWER}[symbol]
+                )
                 continue
             # Positions that vary get the full character class, not just the
             # characters seen there: a wider draw both enlarges the space the
@@ -192,7 +201,11 @@ def _learn_masks(series: Any, sample_size: int = 2000) -> list[dict[str, Any]]:
             # back out. A digit position that never held "0" keeps that
             # constraint, which is what preserves the width of an integer id.
             observed = {v[index] for v in values}
-            if len(observed) == 1:
+            # "Constant" must mean constant across the column, not across the
+            # three rows that happen to share a rare shape -- otherwise those
+            # rows' own characters are emitted verbatim. Below the support
+            # floor the position is redrawn like any other.
+            if len(observed) == 1 and len(values) >= max(20, 0.01 * len(sample)):
                 alphabets.append("".join(observed))
                 continue
             full = {"D": "0123456789", "A": _UPPER, "a": _LOWER}[symbol]
@@ -436,6 +449,7 @@ class TableEncoder:
         frame: pd.DataFrame,
         *,
         overrides: dict[str, str] | None = None,
+        placeholder_styles: dict[str, str] | None = None,
         unique_threshold: float = 0.05,
         max_n_category: int = 50,
         force_min_category: int = 2,
@@ -457,6 +471,7 @@ class TableEncoder:
         columns fell back, via `domain_sources`.
         """
         overrides = overrides or {}
+        placeholder_styles = placeholder_styles or {}
         declared_domain = declared_domain or {}
         specs: list[ColumnSpec] = []
         for name in frame.columns:
@@ -536,7 +551,11 @@ class TableEncoder:
                     spec.max_value = spec.min_value + 1e-9
             elif kind == NON_STD:
                 spec.placeholder_prefix = f"{name}_"
-                spec.placeholder_style = _placeholder_style_for(name)
+                # What the column is beats what it is called: a classification
+                # (or an explicit setting) wins over the name-substring hint.
+                spec.placeholder_style = placeholder_styles.get(
+                    name
+                ) or _placeholder_style_for(name)
                 if spec.placeholder_style == "token":
                     # No name hint (account numbers, reference codes, internal
                     # keys). Learn the format from the values instead of

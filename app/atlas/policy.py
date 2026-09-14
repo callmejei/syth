@@ -92,6 +92,34 @@ class TablePolicy:
         """Columns protected by inference rather than by a curated tag."""
         return [d.column for d in self.decisions if d.inferred]
 
+    # A classification says what a column *is*; the encoder needs that to pick a
+    # surrogate generator. Without it the style was guessed from the spelling of
+    # the column name, so `full_name` got names and `cfna1` -- the same data
+    # under a bank's internal naming -- got a row counter.
+    _STYLE_FOR_TAG = {
+        "NAME": "name",
+        "EMAIL": "email",
+        "PHONE": "phone",
+        "NATIONAL_ID": "national_id",
+        "PASSPORT": "national_id",
+        "ADDRESS": "address",
+    }
+
+    def placeholder_styles(self) -> dict[str, str]:
+        """Surrogate generator per column, from its classification."""
+        styles: dict[str, str] = {}
+        for decision in self.decisions:
+            for tag in decision.classifications:
+                # Inference records its guesses as "INFERRED:NAME" so they can
+                # never be mistaken for a curated tag; the shape it implies is
+                # the same either way.
+                bare = tag.split(":", 1)[-1].strip().upper()
+                style = self._STYLE_FOR_TAG.get(bare)
+                if style:
+                    styles[decision.column] = style
+                    break
+        return styles
+
     def encoder_overrides(self) -> dict[str, str]:
         return {
             d.column: d.encoder_kind
