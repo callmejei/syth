@@ -243,6 +243,23 @@ def _make_masked(spec: ColumnSpec, count: int, rng) -> list[str]:
     return values
 
 
+def _column_fingerprint(series: Any) -> str | None:
+    """Identify a column by its values, for spotting exact duplicates.
+
+    Hashing the whole column is what makes this exact: two columns match only
+    if every row matches, in order. Nulls are folded into the digest so a
+    column differing only in where its blanks fall is not treated as a copy.
+    """
+    try:
+        import pandas as pd
+
+        values = series.where(series.notna(), other="<<null>>").astype(str)
+        digest = zlib.crc32("|".join(values.tolist()).encode("utf-8", "replace"))
+        return f"{len(series)}:{digest:08x}"
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def _restore_placeholder_dtype(spec: "ColumnSpec", values: list[str]) -> Any:
     """Put a placeholder back in the source column's type.
 
@@ -286,6 +303,11 @@ class ColumnSpec:
     # Without it an account number came back as "account_number_0" -- a string
     # where the source was an int, of the wrong width, in row order.
     placeholder_masks: list[dict[str, Any]] = field(default_factory=list)
+    # Name of an earlier placeholder column this one duplicated in the source.
+    # Two columns holding the same account number in every row must hold the
+    # same surrogate in every row; generated independently they agree nowhere,
+    # and no per-column score can see it.
+    mirror_of: str | None = None
     # "declared" when the range/categories came from the catalog or config,
     # "data" when they were measured from the training rows. Under DP only
     # "declared" gives an unconditional guarantee.
@@ -326,6 +348,7 @@ class ColumnSpec:
             "placeholder_prefix": self.placeholder_prefix,
             "placeholder_style": self.placeholder_style,
             "placeholder_masks": self.placeholder_masks,
+            "mirror_of": self.mirror_of,
             "other_values": [_jsonable(v) for v in self.other_values],
             "domain_source": self.domain_source,
             "transform": self.transform,
@@ -348,6 +371,7 @@ class ColumnSpec:
             placeholder_prefix=blob.get("placeholder_prefix", ""),
             placeholder_style=blob.get("placeholder_style", "token"),
             placeholder_masks=blob.get("placeholder_masks", []),
+            mirror_of=blob.get("mirror_of"),
             other_values=blob.get("other_values", []),
             domain_source=blob.get("domain_source", "data"),
             transform=blob.get("transform", "none"),
@@ -472,6 +496,8 @@ class TableEncoder:
         """
         overrides = overrides or {}
         placeholder_styles = placeholder_styles or {}
+        # Fingerprint -> first column with those exact values.
+        placeholder_seen: dict[str, str] = {}
         declared_domain = declared_domain or {}
         specs: list[ColumnSpec] = []
         for name in frame.columns:
@@ -550,6 +576,18 @@ class TableEncoder:
                 if spec.max_value <= spec.min_value:
                     spec.max_value = spec.min_value + 1e-9
             elif kind == NON_STD:
+                # Duplicate of a placeholder column already seen? Mirror it
+                # rather than learning a second, unrelated format. Compared on
+                # the values themselves, so it does not matter what either
+                # column is called.
+                fingerprint = _column_fingerprint(series)
+                if fingerprint is not None and fingerprint in placeholder_seen:
+                    spec.mirror_of = placeholder_seen[fingerprint]
+                    specs.append(spec)
+                    continue
+                if fingerprint is not None:
+                    placeholder_seen[fingerprint] = name
+
                 spec.placeholder_prefix = f"{name}_"
                 # Order of authority: an explicit setting, then a curated
                 # catalog tag, then the column's own values, and only then the
@@ -630,6 +668,12 @@ class TableEncoder:
                         values.append(None)
                 data[spec.name] = values
             elif spec.kind == NON_STD:
+                if spec.mirror_of and spec.mirror_of in data:
+                    # Reproduce the duplication itself, not two independent
+                    # draws. mirror_of always names an earlier column, so the
+                    # source of the copy is already built.
+                    data[spec.name] = data[spec.mirror_of]
+                    continue
                 values = _make_placeholders(
                     spec, matrix.shape[0], seed=stable_seed(spec.name, "placeholder")
                 )
